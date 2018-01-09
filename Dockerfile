@@ -1,10 +1,7 @@
 FROM node:alpine
 MAINTAINER joeran.tesse@iteratec.de
 
-ENV HTTP_PORT=8080
-ENV NODE_ENV=production
-
-ENV HOME /root
+ENV HTTP_PORT=8070  NODE_ENV=production HOME=/root
 
 EXPOSE ${HTTP_PORT}
 

@@ -9,7 +9,7 @@
 </style>
 
 <template>
-	<div class="row">
+	<div class="row" style="overflow:auto">
 		<h1>Currencies</h1>
 		<table class="table">
 			<thead>

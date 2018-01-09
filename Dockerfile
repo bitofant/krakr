@@ -10,5 +10,5 @@ EXPOSE ${HTTP_PORT}
 
 WORKDIR $HOME
 COPY . $HOME
-RUN cd $HOME && npm install
+RUN cd $HOME && npm install && npm build
 CMD ["npm","start"]

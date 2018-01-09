@@ -24,14 +24,18 @@
 				<th class="number">24h Stoch.</th>
 			</thead>
 			<tbody>
-				<tr v-for="v in values" :key="v.cid" v-show="v.owned > 0.0001">
+				<tr v-for="v in values" :key="v.cid">
 					<td>{{ v.currency.name }}</td>
-					<td class="number" v-html="niceNumber (v.avgBuy,        5)"></td>
+					<td class="number" v-html="niceNumber (v.avgBuy,        5)" v-if="v.owned > .0001"></td>
+					<td v-else></td>
 					<td class="number" v-html="niceNumber (v.last,          5)"></td>
-					<td class="number" v-html="niceNumber (v.owned,         5)"></td>
-					<td class="number" v-html="niceNumber (v.last * v.owned,2) + '€'"></td>
+					<td class="number" v-html="niceNumber (v.owned,         5)" v-if="v.owned > .0001"></td>
+					<td v-else></td>
+					<td class="number" v-html="niceNumber (v.last * v.owned,2) + '€'" v-if="v.owned > .0001"></td>
+					<td v-else></td>
 					<td class="number" v-html="niceNumber (v.last * v.owned - v.moneySpent,2) + '€'"></td>
-					<td class="number" v-html="niceNumber ((v.last * v.owned - v.moneySpent) / v.moneySpent * 100,1) + '%'"></td>
+					<td class="number" v-html="niceNumber ((v.last * v.owned - v.moneySpent) / v.moneySpent * 100,1) + '%'" v-if="v.owned > .0001"></td>
+					<td v-else></td>
 					<td class="number" v-html="niceNumber (v.last24h.avg,   5)"></td>
 					<td class="number" v-html="niceNumber (v.last24h.volume * v.last24h.avg, 0) + '€'"></td>
 					<td class="number" v-html="stochastic (v.last, v.last24h)" style="color:#080"></td>

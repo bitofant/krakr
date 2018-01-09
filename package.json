@@ -1,0 +1,43 @@
+{
+  "name": "kraken",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "node test/_test.js",
+    "build": "webpack",
+    "start": "npm-run-all --parallel watch:server watch:build",
+    "watch:build": "webpack --watch",
+    "watch:server": "nodemon app.js"
+  },
+  "author": "joeran.tesse@iteratec.de",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.2",
+    "kraken-api": "^1.0.0",
+    "socket.io": "^2.0.4"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-stage-3": "^6.24.1",
+    "bootstrap": "^4.0.0-beta.3",
+    "cross-env": "^5.0.5",
+    "css-loader": "^0.28.7",
+    "file-loader": "^1.1.4",
+    "jquery": "^3.2.1",
+    "node-sass": "^4.7.2",
+    "nodemon": "^1.14.7",
+    "npm-run-all": "^4.1.2",
+    "popper.js": "^1.12.9",
+    "postcss-loader": "^2.0.10",
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.19.1",
+    "vue": "^2.5.13",
+    "vue-loader": "^13.0.5",
+    "vue-template-compiler": "^2.4.4",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.9.1"
+  }
+}

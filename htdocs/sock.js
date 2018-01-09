@@ -1,6 +1,6 @@
 function CreateSocket () {
 	if (typeof (io) !== 'undefined') {
-		return io ();
+		return io (location.href);
 	}
 	return { connected: false };
 }

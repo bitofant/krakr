@@ -89,11 +89,11 @@ function User (auth) {
 					trade1 = tmp;
 				}
 				var asset = trade1.asset;
-				var coins = -trade1.amount;
-				var price = trade2.amount;
+				var coins = trade1.amount;
+				var price = -trade2.amount;
 				if (!details[asset]) details[asset] = 0;
 				if (!remaining[asset]) remaining[asset] = 0;
-				
+
 				if (remaining[asset] > 0) {
 					if (price > 0) {
 						if (remaining[asset] < coins) {
@@ -101,7 +101,6 @@ function User (auth) {
 							coins *= pct;
 							price *= pct;
 						}
-						log ('bought ' + coins + ' ' + asset + ' for ' + price);
 						details[asset] += price;
 						remaining[asset] -= coins;
 					}

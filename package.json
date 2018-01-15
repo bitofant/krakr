@@ -6,10 +6,11 @@
   "scripts": {
     "test": "node test/_test.js",
     "build": "webpack",
-    "dev-start": "npm-run-all --parallel watch:server watch:build",
+    "assets": "node update-assets.js",
+    "start": "NODE_ENV=development HTTP_PORT=8080 npm-run-all --parallel watch:server watch:build",
     "watch:build": "webpack --watch",
     "watch:server": "nodemon app.js",
-    "start": "node app.js"
+    "start-prod": "NODE_ENV=production HTTP_PORT=8071 node app.js"
   },
   "author": "joeran.tesse@iteratec.de",
   "license": "ISC",

@@ -1,18 +1,25 @@
+const props = require ('./application-properties');
 const fs = require ('fs');
 const express = require ('express');
 const app = express ();
 const server = require ('http').createServer (app);
 const io = require ('socket.io') (server);
-const port = process.env.HTTP_PORT || 8071;
 const kraken = require ('./modules/kraken').singleton;
 
-const UserSession = require ('./modules/user-session');
+const loadUsers = require ('./modules/user/user-loader');
+const UserSession = require ('./modules/user/user-session');
 const bus = require ('./modules/event-bus');
 
-app.use (express.static ('./htdocs'));
+const logger = require ('./modules/helper/logger');
+const log = logger (module);
 
-server.listen (port, () => {
-	console.log ('App listening on port ' + server.address ().port);
+app.use (express.static ('./htdocs'));
+app.use ('/log/', logger.express);
+
+
+server.listen (props.port, () => {
+	log ('App listening on port ' + server.address ().port);
+	loadUsers ();
 });
 
 var reloadUntil = Date.now () + 5000;
@@ -22,18 +29,15 @@ fs.watchFile (__dirname + '/htdocs/bundle.js', () => {
 })
 
 io.on ('connection', socket => {
-	console.log ('New socket connection!');
-
-	// if (Date.now () < reloadUntil) {
-	// 	reloadUntil = 0;
-	// 	setTimeout (() => {
-	// 		socket.emit ('refresh');
-	// 	}, 500);
-	// }
+	log ('New socket connection!');
 	
 	socket.on ('auth', auth => {
 		new UserSession (socket, auth);
 		socket.emit ('auth:success');
 	});
 
+});
+
+process.on ('uncaughtException', err => {
+	console.log (err);
 });

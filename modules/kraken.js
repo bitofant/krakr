@@ -3,6 +3,7 @@ const props = require ('../application-properties');
 const bus = require ('./event-bus');
 const CallRateLimiter = require ('./helper/kraken-callrate');
 const assets = require ('./assets');
+const log = require('./helper/logger')(module);
 
 const T_SECOND = 1000;
 const T_MINUTE = 60 * T_SECOND;
@@ -45,6 +46,12 @@ function Kraken (auth) {
 
 
 	function callAPI (fn, args, callback, numTries) {
+		if (props.krakenDisabled) {
+			process.nextTick (() => {
+				callback (new Error ('Kraken unavailable'));
+			});
+			return;
+		}
 		// place / cancel order: 0
 		// anything else: 1
 		// ledger / trade history: 2
@@ -57,19 +64,19 @@ function Kraken (auth) {
 			if (numTries-- <= 0) {
 				if (done) return;
 				done = true;
-				console.log ('...aborting! ' + (Math.round ((Date.now () - t1) / 100) / 10) + 's');
+				log ('    ...' + fn + '.aborting! ' + (Math.round ((Date.now () - t1) / 100) / 10) + 's');
 				callback (lastErr);
 			} else {
 				callRateLimiter.reduce (cost, () => {
-					console.log ('trying{"' + fn + '":' + numTries + '}...');
+					log ('trying.' + fn + ':' + numTries + '...');
 					client.api (fn, args).then (result => {
 						if (done) return;
 						done = true;
-						console.log ('...success! ' + (Math.round ((Date.now () - t1) / 100) / 10) + 's');
+						log ('    ...' + fn + '.success! ' + (Math.round ((Date.now () - t1) / 100) / 10) + 's');
 						callback (null, result.result);
 					}).catch (err => {
 						if (done) return;
-						console.log ('...error!');
+						log ('    ...' + fn + '.error!');
 						lastErr = err;
 						tryit ();
 					});
@@ -101,14 +108,6 @@ function Kraken (auth) {
 	};
 
 
-	
-
-
-
-	this.socketClosed = () => {
-		callRateLimiter.stop ();
-		client = null;
-	};
 
 }
 
@@ -149,7 +148,7 @@ function refreshValuesOfTradables () {
 	Kraken.singleton.callAPI ('Ticker', {
 		pair: assets.tradablePairs.join (',')
 	}, (err, result) => {
-		if (err) console.log (err);
+		if (err) log (err);
 		else {
 			for (var pair in result) {
 				assets.names.forEach (assetName => {

@@ -14,31 +14,59 @@
 		<table class="table">
 			<thead>
 				<th>Currency</th>
-				<th class="number">Avg. Buy</th>
 				<th class="number">Last Trade</th>
+				<th class="number">Avg. Buy</th>
 				<th class="number">Owned</th>
 				<th class="number">Value</th>
 				<th class="number" colspan="2" style="text-align:center">Gain</th>
-				<th class="number">24h Average</th>
+				<th class="number">Total Gain</th>
 				<th class="number">24h Volume</th>
 				<th class="number">24h Stoch.</th>
 			</thead>
 			<tbody>
 				<tr v-for="v in values" :key="v.cid">
 					<td>{{ v.currency.name }}</td>
-					<td class="number" v-html="niceNumber (v.avgBuy,        5)" v-if="v.owned > .0001"></td>
-					<td v-else></td>
-					<td class="number" v-html="niceNumber (v.last,          5)"></td>
-					<td class="number" v-html="niceNumber (v.owned,         5)" v-if="v.owned > .0001"></td>
-					<td v-else></td>
-					<td class="number" v-html="niceNumber (v.last * v.owned,2) + '€'" v-if="v.owned > .0001"></td>
-					<td v-else></td>
-					<td class="number" v-html="niceNumber (v.last * v.owned - v.moneySpent,2) + '€'"></td>
-					<td class="number" v-html="niceNumber ((v.last * v.owned - v.moneySpent) / v.moneySpent * 100,1) + '%'" v-if="v.owned > .0001"></td>
-					<td v-else></td>
-					<td class="number" v-html="niceNumber (v.last24h.avg,   5)"></td>
-					<td class="number" v-html="niceNumber (v.last24h.volume * v.last24h.avg, 0) + '€'"></td>
-					<td class="number" v-html="stochastic (v.last, v.last24h)" style="color:#080"></td>
+					<!-- last trade price -->
+					<td class="number"
+							v-html="niceNumber (v.last, 5)"></td>
+
+					<!-- avg buy price -->
+					<td class="number"
+							v-html="niceNumber (v.avgBuyPrice, 5)"
+							v-if="v.owned > .0001"></td>
+						<td v-else></td>
+					<!-- owned -->
+					<td class="number"
+							v-html="v.currency.symbol + niceNumber (v.owned, 5)"
+							v-if="v.owned > .0001"></td>
+						<td v-else></td>
+					<!-- value -->
+					<td class="number"
+							v-html="niceNumber (v.last * v.owned, 2) + '€'"
+							v-if="v.owned > .0001"></td>
+						<td v-else></td>
+
+					<!-- gain -->
+					<td class="number"
+							v-html="niceNumber ((v.last - v.avgBuyPrice) * v.owned, 2) + '€'"
+							v-if="v.owned > .0001"></td>
+						<td v-else></td>
+					<!-- gain (percentage) -->
+					<td class="number"
+							v-html="niceNumber ((v.last - v.avgBuyPrice) / v.avgBuyPrice * 100, 1) + '%'"
+							v-if="v.owned > .0001"></td>
+						<td v-else></td>
+					<!-- total gain -->
+					<td class="number"
+							v-html="niceNumber ((v.last * v.owned) - v.moneySpent, 2) + '€'"
+							v-if="v.moneySpent > .0001 || v.moneySpent < -.0001"></td>
+						<td v-else></td>
+
+					<!-- 24h statistics -->
+					<td class="number"
+							v-html="niceNumber (v.last24h.volume * v.last24h.avg, 0) + '€'"></td>
+					<td class="number" style="color:#080"
+							v-html="stochastic (v.last, v.last24h)"></td>
 				</tr>
 				<tr>
 					<td>Euro</td>
@@ -63,6 +91,7 @@ import assets from '../js/assets';
 
 var data = {
 	balance: {},
+	avgBuyPrice: {},
 	moneySpent: {},
 	values: [],
 	totalSum: 0
@@ -100,34 +129,31 @@ export default {
 				s0 = s0.substr (0, s0.length - 3);
 			}
 			s[0] = s0 + ns0;
+			if (s[0].startsWith ('-,')) s[0] = '-' + s[0].substr (2);
+			if (s[0] === '0') s[0] = '';
+			else if (s[0] === '-0') s[0] = '-';
+			if (s.length > 1 && s[0].length > 1) s[1] = '<span style="opacity:.5">' + s[1] + '</span>';
 			return s.join ('.');
 		}
 	}
 }
 
 sock.on ('balance', balance => {
-	Object.assign (data.balance, balance);
+	Object.assign (data.balance, balance.balance);
+	Object.assign (data.moneySpent, balance.moneySpent);
+	Object.assign (data.avgBuyPrice, balance.avgBuyPrice);
 	data.values.forEach (item => {
-		if (typeof (balance[item.cid]) === 'number') {
-			item.owned = balance[item.cid];
+		if (typeof (data.balance[item.cid]) === 'number') {
+			item.owned = data.balance[item.cid];
 			if (typeof (data.moneySpent[item.cid]) === 'number') {
-				item.avgBuy = data.moneySpent[item.cid] / balance[item.cid];
+				item.avgBuyPrice = data.avgBuyPrice[item.cid];
+				item.moneySpent = data.moneySpent[item.cid];
 			}
 		}
 	});
 	// console.log (JSON.stringify (balance, null, 4));
 });
-sock.on ('moneySpent', moneySpent => {
-	data.moneySpent = moneySpent;
-	data.values.forEach (item => {
-		if (typeof (moneySpent[item.cid]) === 'number') {
-			item.moneySpent = moneySpent[item.cid];
-			if (typeof (data.balance[item.cid]) === 'number') {
-				item.avgBuy = moneySpent[item.cid] / data.balance[item.cid];
-			}
-		}
-	});
-})
+
 sock.on ('values_of_tradable_assets', values => {
 	var oldValues = {};
 	data.values.forEach (item => {

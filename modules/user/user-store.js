@@ -1,10 +1,13 @@
 const fs = require ('fs');
+const props = require ('../../application-properties');
 
 
 function UserStore (auth) {
-	var fn = __dirname + '/../user-store/' + auth.apikey.replace (/[^a-zA-Z0-9]/g, '-') + '.json';
+	var fn = props.userStore + auth.apikey.replace (/[^a-zA-Z0-9]/g, '-') + '.json';
 
-	var data = {};
+	var data = {
+		auth: auth
+	};
 	var somethingChanged = false;
 
 	if (fs.existsSync (fn)) {
@@ -12,21 +15,28 @@ function UserStore (auth) {
 		data = JSON.parse (contents);
 	}
 
-	this.get = (varname, defaultValue) => {
+	var get = this.get = (varname, defaultValue) => {
 		return data[varname] || defaultValue;
 	};
 
-	this.set = (varname, value) => {
+	var set = this.set = (varname, value) => {
 		data[varname] = value;
 		somethingChanged = true;
 	}
 
+	setTimeout (() => {
+		set ('auth', auth);
+		somethingChanged = true;
+	}, 1000);
 
 	var timer = setInterval (() => {
 		if (!somethingChanged) return;
 		somethingChanged = false;
 		fs.writeFile (fn, JSON.stringify (data, null, 4), err => {
-			if (err) console.log ('Error writing user-store to disc!');
+			if (err) {
+				console.log ('Error writing user-store to disc!');
+				somethingChanged = true;
+			}
 		});
 	}, 1000);
 	

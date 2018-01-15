@@ -79,7 +79,7 @@ function User (auth) {
 		var remaining = Object.assign ({}, balance);
 		var details = {};
 		var i = ledger.length - 1;
-		while (i >= 0) {
+		while (i >= 1) {
 			var trade2 = ledger[i--];
 			if (trade2.type === 'trade') {
 				var trade1 = ledger[i--];
@@ -89,7 +89,7 @@ function User (auth) {
 					trade1 = tmp;
 				}
 				var asset = trade1.asset;
-				var coins = trade1.amount;
+				var coins = -trade1.amount;
 				var price = trade2.amount;
 				if (!details[asset]) details[asset] = 0;
 				if (!remaining[asset]) remaining[asset] = 0;
@@ -101,6 +101,7 @@ function User (auth) {
 							coins *= pct;
 							price *= pct;
 						}
+						log ('bought ' + coins + ' ' + asset + ' for ' + price);
 						details[asset] += price;
 						remaining[asset] -= coins;
 					}

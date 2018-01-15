@@ -10,7 +10,7 @@
 
 <template>
 	<div class="row" style="overflow:auto">
-		<h1>Currencies</h1>
+		<h1>Currencies <span style="font-size:50%;font-family:monospace">{{ lastUpdateDelta }}</span></h1>
 		<table class="table">
 			<thead>
 				<th>Currency</th>
@@ -94,7 +94,9 @@ var data = {
 	avgBuyPrice: {},
 	moneySpent: {},
 	values: [],
-	totalSum: 0
+	totalSum: 0,
+	lastUpdate: 0,
+	lastUpdateDelta: 0
 };
 
 export default {
@@ -132,7 +134,9 @@ export default {
 			if (s[0].startsWith ('-,')) s[0] = '-' + s[0].substr (2);
 			if (s[0] === '0') s[0] = '';
 			else if (s[0] === '-0') s[0] = '-';
-			if (s.length > 1 && s[0].length > 1) s[1] = '<span style="opacity:.5">' + s[1] + '</span>';
+			if (s.length > 1 && s[0].length > 1) {
+				if (s[0].charAt (0) !== '-' || s[0].length > 2) s[1] = '<span style="opacity:.5">' + s[1] + '</span>';
+			}
 			return s.join ('.');
 		}
 	}
@@ -142,6 +146,7 @@ sock.on ('balance', balance => {
 	Object.assign (data.balance, balance.balance);
 	Object.assign (data.moneySpent, balance.moneySpent);
 	Object.assign (data.avgBuyPrice, balance.avgBuyPrice);
+	data.lastUpdate = Date.now ();
 	data.values.forEach (item => {
 		if (typeof (data.balance[item.cid]) === 'number') {
 			item.owned = data.balance[item.cid];
@@ -162,6 +167,10 @@ sock.on ('values_of_tradable_assets', values => {
 	var newValues = [];
 	var totalSum = data.balance.ZEUR || 0;
 	for (var k in values) {
+		if (k === 'lastUpdate') {
+			data.lastUpdate = Date.now () - values.lastUpdate;
+			continue;
+		}
 		newValues.push (Object.assign (oldValues[k] || {}, values[k], {
 			cid: k,
 			currency: assets[k],
@@ -175,6 +184,16 @@ sock.on ('values_of_tradable_assets', values => {
 	});
 	data.values = newValues;
 	// console.log (JSON.stringify (data.values[1], null, 4));
+});
+
+function updateLastUpdateDelta () {
+	var d = (Math.round ((Date.now () - data.lastUpdate) / 100) / 10).toString ();
+	if (d.length < 3 || d.charAt (d.length - 2) !== '.') d += '.0';
+	data.lastUpdateDelta = d;
+	window.requestAnimationFrame (updateLastUpdateDelta);
+}
+sock.once ('values_of_tradable_assets', () => {
+	setTimeout (updateLastUpdateDelta, 50);
 });
 
 setTimeout (() => {

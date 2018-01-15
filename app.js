@@ -17,9 +17,11 @@ app.use (express.static ('./htdocs'));
 app.use ('/log/', logger.express);
 
 
-server.listen (props.port, () => {
-	log ('App listening on port ' + server.address ().port);
-	loadUsers ();
+bus.once ('values_of_tradable_assets', () => {
+	server.listen (props.port, () => {
+		log ('App listening on port ' + server.address ().port);
+		loadUsers ();
+	});
 });
 
 var reloadUntil = Date.now () + 5000;

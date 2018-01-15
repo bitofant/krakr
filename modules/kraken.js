@@ -13,7 +13,8 @@ const T_DAY = 24 * T_HOUR;
 
 const data_cache = {
 	serverTime: cachedValue (7 * T_DAY),
-	tradables: {}
+	tradables: {},
+	tradable_timestamp: 0
 };
 
 var singletonInstance = null;
@@ -104,7 +105,7 @@ function Kraken (auth) {
 
 
 	this.getValueOfTradables = () => {
-		return data_cache.tradables;
+		return Object.assign ({ lastUpdate: Date.now () - data_cache.tradable_timestamp }, data_cache.tradables);
 	};
 
 
@@ -142,8 +143,8 @@ function cachedValue (maxAge, value) {
 Kraken.singleton = new Kraken ();
 
 
-const vtRefreshInterval = 60 * 1000;
-var vtLastRefresh = 0;
+const vtRefreshInterval = 30 * 1000;
+var vtLastRefresh = Date.now ();
 function refreshValuesOfTradables () {
 	Kraken.singleton.callAPI ('Ticker', {
 		pair: assets.tradablePairs.join (',')
@@ -158,14 +159,15 @@ function refreshValuesOfTradables () {
 					}
 				});
 			}
-			bus.emit ('values_of_tradable_assets');
+			data_cache.tradable_timestamp = Date.now ();
+			bus.emit ('values_of_tradable_assets', data_cache.tradables);
 		}
-		var deltaT = Date.now () - vtLastRefresh;
-		vtLastRefresh = Date.now ();;
+		var deltaT = data_cache.tradable_timestamp - vtLastRefresh;
+		vtLastRefresh = data_cache.tradable_timestamp;
 		setTimeout (refreshValuesOfTradables, Math.max (5000, vtRefreshInterval - deltaT));
 	}, 10)
 }
-setTimeout (refreshValuesOfTradables, 200);
+setTimeout (refreshValuesOfTradables, 20);
 
 function convertTickerInfo (obj) {
 	return {

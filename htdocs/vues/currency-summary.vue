@@ -148,7 +148,6 @@ sock.on ('balance', balance => {
 	Object.assign (data.moneySpent, balance.moneySpent);
 	Object.assign (data.avgBuyPrice, balance.avgBuyPrice);
 	if (balance.totalDeposit) data.totalDeposit = balance.totalDeposit;
-	document.title = balance.totalDeposit;
 	data.lastUpdate = Date.now ();
 	data.values.forEach (item => {
 		if (typeof (data.balance[item.cid]) === 'number') {

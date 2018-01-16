@@ -20,7 +20,8 @@ function UserSession (socket, auth) {
 		socket.emit ('balance', {
 			balance: user.balance,
 			moneySpent: user.getMoneySpent (),
-			avgBuyPrice: user.getAvgBuyPrice ()
+			avgBuyPrice: user.getAvgBuyPrice (),
+			totalDeposit: user.getMoneyDeposited ()
 		});
 		setTimeout (sendTradableAssetValues, 500);
 	});

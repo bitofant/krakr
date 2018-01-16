@@ -1,3 +1,5 @@
+const bus = require ('../event-bus')
+
 function CryptoWatch () {
 	
 }

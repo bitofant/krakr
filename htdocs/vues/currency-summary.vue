@@ -74,8 +74,8 @@
 					<td class="number"></td>
 					<td class="number" v-html="niceNumber (balance.ZEUR,2) + '€'"></td>
 					<td class="number" v-html="niceNumber (totalSum,2) + '€'"></td>
-					<td class="number" v-html="niceNumber (totalSum - 1500,2) + '€'"></td>
-					<td class="number" v-html="niceNumber ((totalSum - 1500) / 1500 * 100,1) + '%'"></td>
+					<td class="number" v-html="niceNumber (totalSum - totalDeposit,2) + '€'"></td>
+					<td class="number" v-html="niceNumber ((totalSum - totalDeposit) / totalDeposit * 100,1) + '%'"></td>
 					<td class="number"></td>
 					<td class="number"></td>
 					<td class="number"></td>
@@ -93,6 +93,7 @@ var data = {
 	balance: {},
 	avgBuyPrice: {},
 	moneySpent: {},
+	totalDeposit: 1500,
 	values: [],
 	totalSum: 0,
 	lastUpdate: 0,
@@ -146,6 +147,8 @@ sock.on ('balance', balance => {
 	Object.assign (data.balance, balance.balance);
 	Object.assign (data.moneySpent, balance.moneySpent);
 	Object.assign (data.avgBuyPrice, balance.avgBuyPrice);
+	if (balance.totalDeposit) data.totalDeposit = balance.totalDeposit;
+	document.title = balance.totalDeposit;
 	data.lastUpdate = Date.now ();
 	data.values.forEach (item => {
 		if (typeof (data.balance[item.cid]) === 'number') {

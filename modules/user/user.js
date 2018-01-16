@@ -31,7 +31,8 @@ function User (auth) {
 			sockets.emit ('balance', {
 				balance: balance,
 				moneySpent: getMoneySpent (),
-				avgBuyPrice: getAvgBuyPrice ()
+				avgBuyPrice: getAvgBuyPrice (),
+				totalDeposit: getMoneyDeposited ()
 			});
 			if (callback) callback ();
 		}, 10);
@@ -54,23 +55,13 @@ function User (auth) {
 		var details = {
 			BCH: 0
 		};
-		var i = 0;
-		while (i < ledger.length - 1) {
-			var trade1 = ledger[i++];
-			if (trade1.type === 'trade') {
-				var trade2 = ledger[i++];
-				if (trade1.asset === 'ZEUR') {
-					var tmp = trade2;
-					trade2 = trade1;
-					trade1 = tmp;
-				}
-				var asset = trade1.asset;
-				var price = trade2.amount;
-				if (!details[asset]) details[asset] = 0;
-				details[asset] -= price;
-				// if (trade1.balance === 0) details[asset] = 0;
-			}
-		}
+		getTrades ().forEach (trade => {
+			var asset = trade.asset,
+					price = trade.price;
+			if (!details[asset]) details[asset] = 0;
+			details[asset] += price;
+			// if (trade1.balance === 0) details[asset] = 0;
+		});
 		return details;
 	}
 	this.getMoneySpent = getMoneySpent;
@@ -79,42 +70,81 @@ function User (auth) {
 		var remaining = Object.assign ({}, balance);
 		var details = {};
 		var i = ledger.length - 1;
-		while (i >= 1) {
-			var trade2 = ledger[i--];
-			if (trade2.type === 'trade') {
-				var trade1 = ledger[i--];
-				if (trade1.asset === 'ZEUR') {
-					var tmp = trade2;
-					trade2 = trade1;
-					trade1 = tmp;
-				}
-				var asset = trade1.asset;
-				var coins = trade1.amount;
-				var price = -trade2.amount;
-				if (!details[asset]) details[asset] = 0;
-				if (!remaining[asset]) remaining[asset] = 0;
+		getTrades ().reverse ().forEach (trade => {
+			var asset = trade.asset,
+					price = trade.price,
+					coins = trade.coins;
+			if (!details[asset]) details[asset] = 0;
+			if (!remaining[asset]) remaining[asset] = 0;
 
-				if (remaining[asset] > 0) {
-					if (price > 0) {
-						if (remaining[asset] < coins) {
-							var pct = remaining[asset] / coins;
-							coins *= pct;
-							price *= pct;
-						}
-						details[asset] += price;
-						remaining[asset] -= coins;
+			if (remaining[asset] > 0) {
+				if (price > 0) {
+					if (remaining[asset] < coins) {
+						var pct = remaining[asset] / coins;
+						coins *= pct;
+						price *= pct;
 					}
+					details[asset] += price;
+					remaining[asset] -= coins;
 				}
-				// details[asset] -= price;
-				// if (trade1.balance === 0) details[asset] = 0;
 			}
-		}
+		});
 		for (var k in balance) {
 			details[k] /= balance[k];
 		}
 		return details;
 	}
 	this.getAvgBuyPrice = getAvgBuyPrice;
+
+	function getMoneyDeposited () {
+		var eur = 0;
+		for (var i = 0; i < ledger.length; i++) {
+			var deposit = ledger[i];
+			if (deposit.type === 'deposit' && deposit.asset === 'ZEUR') {
+				eur += deposit.amount;
+			}
+		}
+		return eur;
+	}
+	this.getMoneyDeposited = getMoneyDeposited;
+
+	/**
+	 * @returns {[Trade]}
+	 */
+	function getTrades () {
+		var trades = [];
+		var i = 0;
+		while (i < ledger.length - 1) {
+			var trade1 = ledger[i++];
+			if (trade1.type === 'trade') {
+				var trade2 = ledger[i++];
+				trades.push (new Trade (trade1, trade2));
+			}
+		}
+		return trades;
+	}
+
+	/**
+	 * 
+	 * @class
+	 * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade1 
+	 * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade2
+	 */
+	function Trade (trade1, trade2) {
+		if (trade1.asset === 'ZEUR') {
+			var tmp = trade2;
+			trade2 = trade1;
+			trade1 = tmp;
+		}
+		/** @member {string} */
+		this.asset = trade1.asset;
+
+		/** @member {number} */
+		this.price = -trade2.amount;
+
+		/** @member {number} */
+		this.coins = trade1.amount;
+	}
 
 	this.refreshBalance = callback => {
 		fetchBalance (() => {

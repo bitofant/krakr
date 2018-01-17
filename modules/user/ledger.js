@@ -82,4 +82,46 @@ function updateLedgers (kraken, ledgers, callback) {
 	}
 }
 
+
+
+/**
+ * @returns {[Trade]}
+ */
+function getTrades (ledger) {
+	var trades = [];
+	var i = 0;
+	while (i < ledger.length - 1) {
+		var trade1 = ledger[i++];
+		if (trade1.type === 'trade') {
+			var trade2 = ledger[i++];
+			trades.push (new Trade (trade1, trade2));
+		}
+	}
+	return trades;
+}
+
+/**
+ * 
+ * @class
+ * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade1 
+ * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade2
+ */
+function Trade (trade1, trade2) {
+	if (trade1.asset === 'ZEUR') {
+		var tmp = trade2;
+		trade2 = trade1;
+		trade1 = tmp;
+	}
+	/** @member {string} */
+	this.asset = trade1.asset;
+
+	/** @member {number} */
+	this.price = -trade2.amount;
+
+	/** @member {number} */
+	this.coins = trade1.amount;
+}
+
+updateLedgers.getTrades = getTrades;
+
 module.exports = updateLedgers;

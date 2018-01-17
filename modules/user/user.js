@@ -5,6 +5,7 @@ const assets = require ('../assets');
 const log = require ('../helper/logger') (module);
 const SocketCollection = require ('./socket-collection');
 const getLedger = require ('./ledger');
+const getTrades = getLedger.getTrades;
 
 
 /** @type {Object.<string,User>} */
@@ -48,6 +49,10 @@ function User (auth) {
 	}), ledger = store.get ('ledger', []);
 
 
+	/**
+	 * 
+	 * @param {()=>void} callback 
+	 */
 	function fetchBalance (callback) {
 		kraken.callAPI ('Balance', null, (err, result) => {
 			if (err) throw err;
@@ -65,6 +70,11 @@ function User (auth) {
 		}, 10);
 	}
 
+	
+	/**
+	 * 
+	 * @param {()=>void} callback 
+	 */
 	function updateLedger (callback) {
 		log ('updateLedger();');
 		getLedger (kraken, ledger, changesFound => {
@@ -78,6 +88,10 @@ function User (auth) {
 		});
 	}
 
+
+	/**
+	 * @returns {Object.<string,number>}
+	 */
 	function getMoneySpent () {
 		var details = {
 			BCH: 0
@@ -93,6 +107,10 @@ function User (auth) {
 	}
 	this.getMoneySpent = getMoneySpent;
 
+
+	/**
+	 * @returns {Object.<string,number>}
+	 */
 	function getAvgBuyPrice () {
 		var remaining = Object.assign ({}, balance);
 		var details = {};
@@ -123,6 +141,10 @@ function User (auth) {
 	}
 	this.getAvgBuyPrice = getAvgBuyPrice;
 
+
+	/**
+	 * @returns {number}
+	 */
 	function getMoneyDeposited () {
 		var eur = 0;
 		for (var i = 0; i < ledger.length; i++) {
@@ -136,6 +158,10 @@ function User (auth) {
 	this.getMoneyDeposited = getMoneyDeposited;
 
 
+	/**
+	 * 
+	 * @param {()=>void} callback 
+	 */
 	this.refreshBalance = callback => {
 		fetchBalance (() => {
 			updateLedger (() => {
@@ -175,45 +201,3 @@ getUser.byName = name => {
 };
 
 module.exports = getUser;
-
-
-
-
-
-/**
- * @returns {[Trade]}
- */
-function getTrades (ledger) {
-	var trades = [];
-	var i = 0;
-	while (i < ledger.length - 1) {
-		var trade1 = ledger[i++];
-		if (trade1.type === 'trade') {
-			var trade2 = ledger[i++];
-			trades.push (new Trade (trade1, trade2));
-		}
-	}
-	return trades;
-}
-
-/**
- * 
- * @class
- * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade1 
- * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade2
- */
-function Trade (trade1, trade2) {
-	if (trade1.asset === 'ZEUR') {
-		var tmp = trade2;
-		trade2 = trade1;
-		trade1 = tmp;
-	}
-	/** @member {string} */
-	this.asset = trade1.asset;
-
-	/** @member {number} */
-	this.price = -trade2.amount;
-
-	/** @member {number} */
-	this.coins = trade1.amount;
-}

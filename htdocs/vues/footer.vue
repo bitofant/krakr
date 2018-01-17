@@ -5,15 +5,27 @@
 		left: 0px;
 		width: 100%;
 		text-align: center;
-		border-top: 1px solid #000;
-		background: #eee;
+		background: linear-gradient(180deg, #ddd, #f3f3f3);
+		box-shadow: 0 0 .5em rgba(0,0,0,.6);
 		color: #888;
 		font-size: 80%;
+	}
+	#disconnect {
+		float: right;
+		display: inline-block;
+		width: 1em;
+		text-align: center;
 	}
 </style>
 
 <template>
-	<div id="footr" :style="style">{{ msg }}</div>
+	<div>
+		&nbsp;<br />&nbsp;
+		<div id="footr" :style="style">
+			{{ msg }}
+			<a id="disconnect" href="#" @click="footerClick()">&times;</a>
+		</div>
+	</div>
 </template>
 
 <script>
@@ -41,6 +53,11 @@ export default {
 	name: 'footr',
 	data () {
 		return data;
+	},
+	methods: {
+		footerClick: () => {
+			sock.close ();
+		}
 	}
 }
 </script>

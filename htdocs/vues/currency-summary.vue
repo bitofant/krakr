@@ -198,9 +198,9 @@ sock.once ('values_of_tradable_assets', () => {
 	setTimeout (updateLastUpdateDelta, 50);
 });
 
-setTimeout (() => {
 
+sock.on ('auth:success', () => {
 	sock.emit ('balance');
-}, 500);
+});
 
 </script>

@@ -81,6 +81,10 @@ sock.on ('disconnect', reason => {
 	});
 });
 
+sock.on ('auth:override', obj => {
+	Object.assign (data, obj);
+});
+
 var loginCache = new (function () {
 	const lskey = 'krakr:lc';
 	this.set = (apikey, privkey) => {

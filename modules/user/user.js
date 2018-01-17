@@ -7,14 +7,41 @@ const SocketCollection = require ('./socket-collection');
 const getLedger = require ('./ledger');
 
 
+/** @type {Object.<string,User>} */
 var users = {};
 
+/**
+ * @class
+ * @param {{apikey:string,privkey:string}} auth
+ * @member {string} name
+ */
 function User (auth) {
 	var self = this;
 	log ('New user created');
 	var store = new UserStore (auth);
 	var kraken = new Kraken (auth);
 	var sockets = this.sockets = new SocketCollection ();
+
+	var name = store.get ('name', '');
+	/**
+	 * @param {string=} newName 
+	 * @returns {string}
+	 */
+	this.name = newName => {
+		if (newName) store.set ('name', name = newName);
+		return name;
+	};
+
+	var email = store.get ('email', '');
+	/**
+	 * @param {string=} newEmail 
+	 * @returns {string}
+	 */
+	this.email = newEmail => {
+		if (newEmail) store.set('email', email = newEmail);
+		return email;
+	};
+
 
 	var balance = this.balance = store.get ('balance', {
 		ZEUR: 0
@@ -55,7 +82,7 @@ function User (auth) {
 		var details = {
 			BCH: 0
 		};
-		getTrades ().forEach (trade => {
+		getTrades (ledger).forEach (trade => {
 			var asset = trade.asset,
 					price = trade.price;
 			if (!details[asset]) details[asset] = 0;
@@ -70,7 +97,7 @@ function User (auth) {
 		var remaining = Object.assign ({}, balance);
 		var details = {};
 		var i = ledger.length - 1;
-		getTrades ().reverse ().forEach (trade => {
+		getTrades (ledger).reverse ().forEach (trade => {
 			var asset = trade.asset,
 					price = trade.price,
 					coins = trade.coins;
@@ -108,43 +135,6 @@ function User (auth) {
 	}
 	this.getMoneyDeposited = getMoneyDeposited;
 
-	/**
-	 * @returns {[Trade]}
-	 */
-	function getTrades () {
-		var trades = [];
-		var i = 0;
-		while (i < ledger.length - 1) {
-			var trade1 = ledger[i++];
-			if (trade1.type === 'trade') {
-				var trade2 = ledger[i++];
-				trades.push (new Trade (trade1, trade2));
-			}
-		}
-		return trades;
-	}
-
-	/**
-	 * 
-	 * @class
-	 * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade1 
-	 * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade2
-	 */
-	function Trade (trade1, trade2) {
-		if (trade1.asset === 'ZEUR') {
-			var tmp = trade2;
-			trade2 = trade1;
-			trade1 = tmp;
-		}
-		/** @member {string} */
-		this.asset = trade1.asset;
-
-		/** @member {number} */
-		this.price = -trade2.amount;
-
-		/** @member {number} */
-		this.coins = trade1.amount;
-	}
 
 	this.refreshBalance = callback => {
 		fetchBalance (() => {
@@ -154,7 +144,9 @@ function User (auth) {
 		});
 	};
 
-
+	this._getFromStore = (varname, defaultValue) => {
+		return store.get (varname, defaultValue);
+	};
 
 }
 
@@ -172,4 +164,56 @@ function getUser (auth) {
 	return users[uid];
 }
 
+getUser.byName = name => {
+	if (name.length === 0) return null;
+	for (var k in users) {
+		if (users[k].name ().toLowerCase () === name) {
+			return users[k]._getFromStore ('auth', null);
+		}
+	}
+	return null;
+};
+
 module.exports = getUser;
+
+
+
+
+
+/**
+ * @returns {[Trade]}
+ */
+function getTrades (ledger) {
+	var trades = [];
+	var i = 0;
+	while (i < ledger.length - 1) {
+		var trade1 = ledger[i++];
+		if (trade1.type === 'trade') {
+			var trade2 = ledger[i++];
+			trades.push (new Trade (trade1, trade2));
+		}
+	}
+	return trades;
+}
+
+/**
+ * 
+ * @class
+ * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade1 
+ * @param {{refid:string,time:number,type:"trade"|string,aclass:"currency"|string,asset:string,amount:number,fee:number,balance:number,id:string}} trade2
+ */
+function Trade (trade1, trade2) {
+	if (trade1.asset === 'ZEUR') {
+		var tmp = trade2;
+		trade2 = trade1;
+		trade1 = tmp;
+	}
+	/** @member {string} */
+	this.asset = trade1.asset;
+
+	/** @member {number} */
+	this.price = -trade2.amount;
+
+	/** @member {number} */
+	this.coins = trade1.amount;
+}

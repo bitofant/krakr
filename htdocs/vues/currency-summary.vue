@@ -24,7 +24,7 @@
 				<th class="number">24h Stoch.</th>
 			</thead>
 			<tbody>
-				<tr v-for="v in values" :key="v.cid">
+				<tr v-for="v in sortedList" :key="v.cid" v-if="typeof (v) !== 'number'">
 					<td>{{ v.currency.name }}</td>
 					<!-- last trade price -->
 					<td class="number"
@@ -66,16 +66,16 @@
 					<td class="number"
 							v-html="niceNumber (v.last24h.volume * v.last24h.avg, 0) + '€'"></td>
 					<td class="number" style="color:#080"
-							v-html="stochastic (v.last, v.last24h)"></td>
+							v-html="stochastic (v.last24h.stoch)"></td>
 				</tr>
 				<tr>
 					<td>Euro</td>
 					<td class="number"></td>
 					<td class="number"></td>
-					<td class="number" v-html="niceNumber (balance.ZEUR,2) + '€'"></td>
-					<td class="number" v-html="niceNumber (totalSum,2) + '€'"></td>
-					<td class="number" v-html="niceNumber (totalSum - totalDeposit,2) + '€'"></td>
-					<td class="number" v-html="niceNumber ((totalSum - totalDeposit) / totalDeposit * 100,1) + '%'"></td>
+					<td class="number" v-html="niceNumber (user.assets.ZEUR,2) + '€'"></td>
+					<td class="number" v-html="niceNumber (user.totalAssetValue,2) + '€'"></td>
+					<td class="number" v-html="niceNumber (user.totalAssetValue - user.totalDeposit,2) + '€'"></td>
+					<td class="number" v-html="niceNumber ((user.totalAssetValue - user.totalDeposit) / user.totalDeposit * 100,1) + '%'"></td>
 					<td class="number"></td>
 					<td class="number"></td>
 					<td class="number"></td>
@@ -88,16 +88,12 @@
 <script>
 import sock from '../sock';
 import assets from '../js/assets';
+import user from '../js/user';
 
 var data = {
-	balance: {},
-	avgBuyPrice: {},
-	moneySpent: {},
-	totalDeposit: 1500,
-	values: [],
-	totalSum: 0,
-	lastUpdate: 0,
-	lastUpdateDelta: 0
+	lastUpdateDelta: 0,
+	user: user,
+	sortedList: []
 };
 
 export default {
@@ -108,8 +104,20 @@ export default {
 	components: {
 	},
 	methods: {
-		stochastic: (value, data) => {
-			var v = Math.round ((value - data.low) / (data.high - data.low) * 100);
+		sortList () {
+			var list = [];
+			for (var k in user.assets) {
+				if (k !== 'ZEUR') list.push (user.assets[k]);
+			}
+			list.sort ((a, b) => {
+				var v1 = a.owned * a.last || 0;
+				var v2 = b.owned * b.last || 0;
+				if (v1 !== 0 || v2 !== 0) return v2 - v1;
+				return b.last - a.last;
+			});
+			data.sortedList = list;
+		},
+		stochastic: v => {
 			var sv = v + '%';
 			if (v <= 20 || v >= 80) {
 				var pct = (v >= 80 ? 100 - v : v) * (255 / 25) | 0;
@@ -140,56 +148,18 @@ export default {
 			}
 			return s.join ('.');
 		}
+	},
+	watch: {
+		"user.lastUpdate": {
+			handler: 'sortList',
+			deep: false
+		}
 	}
 }
 
-sock.on ('balance', balance => {
-	Object.assign (data.balance, balance.balance);
-	Object.assign (data.moneySpent, balance.moneySpent);
-	Object.assign (data.avgBuyPrice, balance.avgBuyPrice);
-	if (balance.totalDeposit) data.totalDeposit = balance.totalDeposit;
-	data.lastUpdate = Date.now ();
-	data.values.forEach (item => {
-		if (typeof (data.balance[item.cid]) === 'number') {
-			item.owned = data.balance[item.cid];
-			if (typeof (data.moneySpent[item.cid]) === 'number') {
-				item.avgBuyPrice = data.avgBuyPrice[item.cid];
-				item.moneySpent = data.moneySpent[item.cid];
-			}
-		}
-	});
-	// console.log (JSON.stringify (balance, null, 4));
-});
-
-sock.on ('values_of_tradable_assets', values => {
-	var oldValues = {};
-	data.values.forEach (item => {
-		oldValues[item.cid] = item;
-	});
-	var newValues = [];
-	var totalSum = data.balance.ZEUR || 0;
-	for (var k in values) {
-		if (k === 'lastUpdate') {
-			data.lastUpdate = Date.now () - values.lastUpdate;
-			continue;
-		}
-		newValues.push (Object.assign (oldValues[k] || {}, values[k], {
-			cid: k,
-			currency: assets[k],
-			owned: data.balance[k] || 0
-		}));
-		totalSum += (data.balance[k] || 0) * values[k].last;
-	}
-	data.totalSum = totalSum;
-	newValues.sort ((a, b) => {
-		return b.last - a.last;
-	});
-	data.values = newValues;
-	// console.log (JSON.stringify (data.values[1], null, 4));
-});
 
 function updateLastUpdateDelta () {
-	var d = (Math.round ((Date.now () - data.lastUpdate) / 100) / 10).toString ();
+	var d = (Math.round ((Date.now () - user.lastUpdate) / 100) / 10).toString ();
 	if (d.length < 3 || d.charAt (d.length - 2) !== '.') d += '.0';
 	data.lastUpdateDelta = d;
 	window.requestAnimationFrame (updateLastUpdateDelta);
@@ -199,8 +169,5 @@ sock.once ('values_of_tradable_assets', () => {
 });
 
 
-sock.on ('auth:success', () => {
-	sock.emit ('balance');
-});
 
 </script>

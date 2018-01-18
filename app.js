@@ -27,9 +27,11 @@ bus.once ('values_of_tradable_assets', () => {
 
 var reloadUntil = Date.now () + 5000;
 
-fs.watchFile (__dirname + '/htdocs/bundle.js', () => {
-	io.emit ('refresh');
-})
+if (props.env.dev) {
+	fs.watchFile (__dirname + '/htdocs/bundle.js', () => {
+		io.emit ('refresh');
+	});
+}
 
 io.on ('connection', socket => {
 	log ('New socket connection!');

@@ -21,13 +21,15 @@
 	<div>
 		<h1>Krakr<span v-if="!mobile"> &mdash; behodl the stinky kraken automizr</span></h1>
 		<div class="container">
-			<login v-if="!loggedIn" />
+			<login v-if="!user.isLoggedin" />
 			<div v-else>
-				<currency-summary />
+				<compact-summary v-if="mobile" />
+				<currency-summary v-else />
 				<div class="row">
 					<button type="button" class="btn btn-primary" v-on:click="emit('balance:refresh')">Refresh Balance</button>
 				</div>
 			</div>
+			<currency-donut></currency-donut>
 			<common-footer />
 		</div>
 	</div>
@@ -37,10 +39,14 @@
 import CommonFooter from './footer.vue';
 import Login from './login.vue';
 import CurrencySummary from './currency-summary.vue';
+import CompactSummary from './compact-summary.vue';
+import CurrencyDonut from './currency-donut.vue';
 import sock from '../sock';
+import user from '../js/user';
+
 
 var data = {
-	loggedIn: false,
+	user: user,
 	mobile: (navigator.userAgent.indexOf ('Mobile') > -1)
 };
 
@@ -52,7 +58,9 @@ export default {
 	components: {
 		CommonFooter,
 		Login,
-		CurrencySummary
+		CurrencySummary,
+		CompactSummary,
+		CurrencyDonut
 	},
 	methods: {
 		emit: ev => {
@@ -61,13 +69,6 @@ export default {
 	}
 }
 
-sock.on ('auth:success', () => {
-	data.loggedIn = true;
-});
-
-sock.on ('disconnect', () => {
-	data.loggedIn = false;
-});
 
 sock.on ('debug', data => {
 	console.log (data);

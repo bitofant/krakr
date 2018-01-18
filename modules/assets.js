@@ -12,7 +12,7 @@ var to_export = {
 		"aclass": "currency",
 		"altname": "BCH",
 		"decimals": 10,
-		"display_decimals": 5,
+		"display_decimals": 2,
 		"cryptowatch": {
 			"symbol": "bch",
 			"route": "https://api.cryptowat.ch/assets/bch"
@@ -25,7 +25,7 @@ var to_export = {
 		"aclass": "currency",
 		"altname": "DASH",
 		"decimals": 10,
-		"display_decimals": 5,
+		"display_decimals": 2,
 		"cryptowatch": {
 			"symbol": "dash",
 			"route": "https://api.cryptowat.ch/assets/dash"
@@ -102,7 +102,7 @@ var to_export = {
 		"aclass": "currency",
 		"altname": "ETC",
 		"decimals": 10,
-		"display_decimals": 5,
+		"display_decimals": 3,
 		"cryptowatch": {
 			"symbol": "etc",
 			"route": "https://api.cryptowat.ch/assets/etc"
@@ -115,7 +115,7 @@ var to_export = {
 		"aclass": "currency",
 		"altname": "ETH",
 		"decimals": 10,
-		"display_decimals": 5,
+		"display_decimals": 3,
 		"cryptowatch": {
 			"symbol": "eth",
 			"route": "https://api.cryptowat.ch/assets/eth"
@@ -213,7 +213,7 @@ var to_export = {
 		}
 	},
 	"XXLM": {
-		"name": "XLM",
+		"name": "Stellar",
 		"symbol": "$",
 		"pair": "",
 		"aclass": "currency",
@@ -221,8 +221,8 @@ var to_export = {
 		"decimals": 8,
 		"display_decimals": 5,
 		"cryptowatch": {
-			"symbol": "",
-			"route": ""
+			"symbol": "xlm",
+			"route": "https://api.cryptowat.ch/assets/xlm"
 		}
 	},
 	"XXMR": {

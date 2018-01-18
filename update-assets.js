@@ -67,9 +67,14 @@ fs.readFile (__dirname + '/modules/assets.js', 'utf8', (err, data) => {
 		var sc = JSON.stringify (curr, null, '	');
 		sc = sc.substr (2, sc.length - 3) + '	';
 		parts[1] = sc;
-		fs.writeFile (__dirname + '/modules/assets.js', parts.join (''), err => {
+		var joined = parts.join ('');
+		fs.writeFile (__dirname + '/modules/assets.js', joined, err => {
 			if (err) throw err;
-			console.log ('file written;');
+			joined = joined.split ('module.exports = ').join ('export default ');
+			fs.writeFile (__dirname + '/htdocs/js/assets.js', joined, err => {
+				if (err) throw err;
+				console.log ('file written;');
+			});
 		});
 	});
 });

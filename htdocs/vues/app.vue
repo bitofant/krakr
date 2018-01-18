@@ -28,8 +28,8 @@
 				<div class="row">
 					<button type="button" class="btn btn-primary" v-on:click="emit('balance:refresh')">Refresh Balance</button>
 				</div>
+				<currency-donut></currency-donut>
 			</div>
-			<currency-donut></currency-donut>
 			<common-footer />
 		</div>
 	</div>

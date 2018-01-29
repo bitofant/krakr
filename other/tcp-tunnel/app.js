@@ -94,7 +94,7 @@ if (host === null) {
 				if (data.length > secretBuffer.length) {
 					chunks.push (data.slice(secretBuffer.length));
 				}
-				var cc = net.createConnection (port, '127.0.0.1', () => {
+				var cc = net.createConnection (port, 'localhost', () => {
 					connected = true;
 					if (chunks.length > 0) cc.write (Buffer.concat (chunks));
 					cc.pipe (c);

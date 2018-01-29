@@ -48,6 +48,7 @@ var port = findArg ('port', 27017);
 var host = findArg ('host', null);
 var secret = findArg ('secret', 'I solemnly swear that I am up to no good');
 var tunnelPort = findArg ('tunnel', 9958);
+var isServer = findArg ('is-server', false);
 
 var secretBuffer = new Buffer (secret, 'utf8');
 
@@ -70,7 +71,9 @@ if (exit) {
 process.title = 'node-tunnel:' + port;
 log ('running on port ' + port + ':' + typeof (port));
 
-if (host === null) {
+if (host === null) host = 'localhost';
+
+if (isServer) {
 
 	// server mode
 	const server = net.createServer (c => {
@@ -94,7 +97,7 @@ if (host === null) {
 				if (data.length > secretBuffer.length) {
 					chunks.push (data.slice(secretBuffer.length));
 				}
-				var cc = net.createConnection (port, 'localhost', () => {
+				var cc = net.createConnection (port, host, () => {
 					connected = true;
 					if (chunks.length > 0) cc.write (Buffer.concat (chunks));
 					cc.pipe (c);
@@ -130,6 +133,8 @@ if (host === null) {
 
 	// client mode
 	const server = net.createServer (c => {
+		console.log ('connection! ' + c.remoteAddress);
+		return;
 		var id = (''+Date.now ()).substr (10);
 		var chunks = [secretBuffer];
 		var connected = false;
@@ -159,7 +164,7 @@ if (host === null) {
 		console.log (err);
 	});
 	server.listen (port, () => {
-		log ('running in client mode');
+		log ('running in client mode (:' + port + ')');
 	});
 
 }

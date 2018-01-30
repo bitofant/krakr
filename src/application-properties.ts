@@ -19,7 +19,8 @@ export default {
 		prod: IS_PROD
 	},
 	userStore: __dirname + '/user-store/',
-	krakenDisabled: false
+	krakenDisabled: false,
+	tickerRefreshInterval: 20 * 1000
 };
 
 

@@ -165,7 +165,6 @@ function cachedValue (maxAge, value) {
 singletonInstance = new Kraken ();
 
 
-const vtRefreshInterval = 30 * 1000;
 var vtLastRefresh = Date.now ();
 function refreshValuesOfTradables () {
 	log ('refreshValuesOfTradables();');
@@ -196,7 +195,7 @@ function refreshValuesOfTradables () {
 			}
 			var deltaT = data_cache.tradable_timestamp - tstart;
 			vtLastRefresh = data_cache.tradable_timestamp;
-			setTimeout (refreshValuesOfTradables, Math.max (5000, vtRefreshInterval - deltaT));
+			setTimeout (refreshValuesOfTradables, Math.max (5000, props.tickerRefreshInterval - deltaT));
 		}, 10);
 	} catch (e) {
 		console.log (e);

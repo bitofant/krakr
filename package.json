@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "node test/_test.js",
-    "build": "npm run webpack && echo (build 50% done) && npm run tsc && echo (build 100% done)",
+    "build": "npm run webpack && echo '(build 50% done)' && npm run tsc && echo '(build 100% done)'",
     "build:prod": "NODE_ENV=production npm run build",
     "start": "NODE_ENV=development HTTP_PORT=8080 npm-run-all --parallel watch:frontend watch:backend nodemon:server",
     "watch:frontend": "webpack --watch",

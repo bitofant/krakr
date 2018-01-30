@@ -4,7 +4,9 @@ const log = logger (module);
 const fs = require ('fs');
 //import { MongoClient, Db } from 'mongodb';
 //import { Db } from 'mongodb';
-const MongoClient = require ('mongodb').MongoClient;
+const mongodb = require ('mongodb');
+const MongoClient = mongodb.MongoClient;
+const Long = mongodb.Long;
 
 
 declare interface Collection {
@@ -42,4 +44,5 @@ function getDB (callback : (db: Db) => void) {
 	else dbListeners.push (callback);
 }
 
+export { getDB as mongo, Long };
 export default getDB;

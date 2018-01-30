@@ -168,6 +168,7 @@ singletonInstance = new Kraken ();
 const vtRefreshInterval = 30 * 1000;
 var vtLastRefresh = Date.now ();
 function refreshValuesOfTradables () {
+	log ('refreshValuesOfTradables();');
 	try {
 		singletonInstance.callAPI ('Ticker', {
 			pair: assets.tradablePairs.join (',')
@@ -175,7 +176,6 @@ function refreshValuesOfTradables () {
 			if (err) log (err);
 			else {
 				for (var pair in result) {
-
 					assets.names.forEach (assetName => {
 						var asset = assets[assetName];
 						if (asset.pair === pair) {
@@ -184,7 +184,12 @@ function refreshValuesOfTradables () {
 					});
 				}
 				data_cache.tradable_timestamp = Date.now ();
-				bus.emit ('values_of_tradable_assets', data_cache.tradables);
+				try {
+					bus.emit ('values_of_tradable_assets', data_cache.tradables);
+				} catch (err) {
+					console.log (err);
+					log ('error dispatching event bus.emit("values_of_tradable_assets", {...}) !', 'red');
+				}
 			}
 			var deltaT = data_cache.tradable_timestamp - vtLastRefresh;
 			vtLastRefresh = data_cache.tradable_timestamp;

@@ -1,4 +1,6 @@
 const props = require ('../../application-properties');
+const MAX_LOG_LENGTH = 1500;
+const LOG_CHOP_SIZE = 100;
 
 const colors : {[name : string]: string} = {
 	black:   '\x1b[30m',
@@ -16,12 +18,16 @@ const colors : {[name : string]: string} = {
 var maxNameLength : number = 0;
 
 var log : Array<{ n:string, t:number, m:string }> = [];
+
 function logEntry (name, timestamp, msg) {
 	log.push ({
 		n: name,
 		t: timestamp,
 		m: msg
 	});
+	if (log.length > MAX_LOG_LENGTH) {
+		log.splice (0, LOG_CHOP_SIZE);
+	}
 }
 
 function Logger (loggerID : any, defaultColor : any=null) {

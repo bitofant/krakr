@@ -1,5 +1,5 @@
 var webpack = require('webpack')
-var nodeExternals = require ('webpack-node-externals');
+//var nodeExternals = require ('webpack-node-externals');
 var fs = require ('fs');
 
 var DIST_FOLDER = __dirname + '/dist/';
@@ -104,31 +104,31 @@ const frontend = {
 
 
 
-const backend = {
-  entry: './src/app.ts',
-  target: 'node',
-  externals: [
-    nodeExternals ()
-  ],
-  output: {
-    path: DIST_FOLDER,
-    publicPath: '/dist/',
-    filename: 'bundle.js',
-    libraryTarget: 'commonjs'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/
-      }
-    ]
-  },
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.json']
-  }
-}
+// const backend = {
+//   entry: './src/app.ts',
+//   target: 'node',
+//   externals: [
+//     nodeExternals ()
+//   ],
+//   output: {
+//     path: DIST_FOLDER,
+//     publicPath: '/dist/',
+//     filename: 'bundle.js',
+//     libraryTarget: 'commonjs'
+//   },
+//   module: {
+//     rules: [
+//       {
+//         test: /\.tsx?$/,
+//         use: 'ts-loader',
+//         exclude: /node_modules/
+//       }
+//     ]
+//   },
+//   resolve: {
+//     extensions: ['.tsx', '.ts', '.js', '.json']
+//   }
+// }
 
 
 

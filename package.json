@@ -11,7 +11,6 @@
     "watch:frontend": "webpack --watch",
     "watch:backend": "tsc --watch -p tsconfig.json",
     "nodemon:server": "nodemon dist/app.js",
-
     "assets": "node update-assets.js",
     "start-prod": "NODE_ENV=production HTTP_PORT=8071 node app.js",
     "forever:stop": "forever stop app.js",

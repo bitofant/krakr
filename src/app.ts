@@ -12,8 +12,9 @@ const io = socketIO (server);
 
 import { singleton as kraken} from './modules/kraken';
 // const cryptowatch = require ('./modules/cryptowat.ch/cryptowatch');
+console.log ('importing history');
 import history from './modules/history/history';
-
+history.a = 'C';
 import findUser from './modules/user/user';
 import loadUsers from './modules/user/user-loader';
 import UserSession from './modules/user/user-session';
@@ -29,7 +30,7 @@ app.use ('/log/', logger_express);
 bus.once ('values_of_tradable_assets', () => {
 	log ('got asset values!');
 	server.listen (props.port, () => {
-		log ('App listening on port ' + server.address ().port);
+		log ('App listening on port ' + server.address ().port, 'red');
 		loadUsers ();
 	});
 });
@@ -64,5 +65,6 @@ io.on ('connection', socket => {
 });
 
 process.on ('uncaughtException', err => {
+	console.log ('### UNCAUGHT EXCEPTION ###');
 	console.log (err);
 });

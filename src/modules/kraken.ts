@@ -21,16 +21,30 @@ const data_cache : { tradables: { [currency: string]: Ticker }, tradable_timesta
 var singletonInstance = null;
 var timeDrift = 0;
 
-/**
- * @class Kraken
- * @param {SocketIO.Socket} socket 
- * @param {*} auth 
- */
+
+
+
+declare interface IntervalDetails {
+	low: number,
+	high: number,
+	avg: number,
+	volume: number
+}
+declare interface Asset {
+	ask: number,
+	bid: number,
+	last: number,
+	today: IntervalDetails,
+	last24h: IntervalDetails
+}
+
+
+
 class Kraken {
 	private callRateLimiter = new CallRateLimiter ();
 	private client;
 
-	public serverTime () {
+	public serverTime () : number {
 			return Date.now () + timeDrift;
 	}
 
@@ -197,4 +211,4 @@ setTimeout (() => {
 
 
 export default Kraken;
-export { singletonInstance as singleton };
+export { singletonInstance as singleton, Kraken, Asset };

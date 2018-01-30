@@ -1,6 +1,6 @@
 const props = require ('../../application-properties');
 
-const colors = {
+const colors : {[name : string]: string} = {
 	black:   '\x1b[30m',
 	red:     '\x1b[31m',
 	green:   '\x1b[32m',
@@ -13,9 +13,9 @@ const colors = {
 	reset:   '\x1b[0m'
 };
 
-var maxNameLength = 0;
+var maxNameLength : number = 0;
 
-var log = [];
+var log : Array<{ n:string, t:number, m:string }> = [];
 function logEntry (name, timestamp, msg) {
 	log.push ({
 		n: name,
@@ -35,12 +35,12 @@ function Logger (loggerID : any, defaultColor : any=null) {
 	if (name.length > maxNameLength) maxNameLength = name.length;
 	var defaultCol = colors[defaultColor] || defaultColor || '';
 
-	function Log (msg : string, color : string='default') {
+	function Log (msg : string, color : string=null) {
 		var d = new Date ();
 		logEntry (name, d.getTime (), msg);
 		var c = colors[color] || color || defaultCol;
 		var cr = c === '' ? '' : colors.reset;
-		console.log (c + '[' + timestamp (d) + cr + c + '|' + fixedLengthString (name, maxNameLength, '.') + ']: ' + msg + cr);
+		console.log (c + timestamp (d) + cr + c + '|' + fixedLengthString (name, maxNameLength, '.') + cr + c + ': ' + msg + cr);
 	}
 	return Log;
 }

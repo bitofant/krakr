@@ -1,5 +1,5 @@
 import { User, getUser } from './user';
-const bus = require ('../event-bus');
+import bus from '../event-bus';
 import assets from '../assets';
 import { singleton as kraken } from '../kraken';
 

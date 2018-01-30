@@ -181,20 +181,20 @@ module.exports = [
 
 
 if (process.env.NODE_ENV === 'production') {
-  module.exports.frontend.devtool = '#source-map'
+  frontend.devtool = '#source-map'
   // http://vue-loader.vuejs.org/en/workflow/production.html
-  module.exports.frontend.plugins = (module.exports.frontend.plugins || []).concat([
+  frontend.plugins = (frontend.plugins || []).concat([
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"production"'
       }
     }),
-    new webpack.optimize.UglifyJsPlugin({
-      sourceMap: true,
-      compress: {
-        warnings: false
-      }
-    }),
+    // new webpack.optimize.UglifyJsPlugin({
+    //   sourceMap: true,
+    //   compress: {
+    //     warnings: false
+    //   }
+    // }),
     new webpack.LoaderOptionsPlugin({
       minimize: true
     })

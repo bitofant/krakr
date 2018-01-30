@@ -157,7 +157,7 @@ function copy (file) {
 
 
 
-ensureDirExistsSync (DIST_FOLDER + '/htdocs');
+ensureDirExistsSync (DIST_FOLDER + 'htdocs');
 copy ('htdocs/index.html');
 copy ('htdocs/favicon.ico');
 

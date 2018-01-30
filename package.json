@@ -20,7 +20,7 @@
     "webpack": "webpack",
     "tsc": "tsc",
     "typings": "typings",
-    "refresh": "git pull && npm run build && npm run forever"
+    "refresh": "git pull && npm run build:prod && npm run forever"
   },
   "author": "joeran.tesse@iteratec.de",
   "license": "ISC",

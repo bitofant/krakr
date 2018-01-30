@@ -170,6 +170,7 @@ var vtLastRefresh = Date.now ();
 function refreshValuesOfTradables () {
 	log ('refreshValuesOfTradables();');
 	try {
+		var tstart = Date.now ();
 		singletonInstance.callAPI ('Ticker', {
 			pair: assets.tradablePairs.join (',')
 		}, (err, result) => {
@@ -193,7 +194,7 @@ function refreshValuesOfTradables () {
 					log ('error dispatching event bus.emit("values_of_tradable_assets", {...}) !', 'red');
 				}
 			}
-			var deltaT = data_cache.tradable_timestamp - vtLastRefresh;
+			var deltaT = data_cache.tradable_timestamp - tstart;
 			vtLastRefresh = data_cache.tradable_timestamp;
 			setTimeout (refreshValuesOfTradables, Math.max (5000, vtRefreshInterval - deltaT));
 		}, 10);

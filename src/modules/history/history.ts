@@ -14,9 +14,9 @@ mongo (db => {
 	var hist = db.collection ('ticker');
 	bus.on('values_of_tradable_assets', (values : {[currency: string]: Asset}) => {
 		var now = kraken.serverTime ();
-		if (lastEntry !== null) {
-			log ('Time since last entry: ' + (Math.round ((lastEntry.timestamp - now) / 100) / 10) + 's');
-		}
+		// if (lastEntry !== null) {
+		// 	log ('Time since last entry: ' + (Math.round ((lastEntry.timestamp - now) / 100) / 10) + 's');
+		// }
 		lastEntry = {
 			timestamp: now,
 			assets: values

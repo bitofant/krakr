@@ -1,9 +1,9 @@
-const Kraken = require ('../kraken');
-const UserStore = require ('./user-store');
+import Kraken from '../kraken';
+import UserStore from './user-store';
 const bus = require ('../event-bus');
 const assets = require ('../assets');
 const log = require ('../helper/logger') (module);
-const SocketCollection = require ('./socket-collection');
+import SocketCollection from './socket-collection';
 const getLedger = require ('./ledger');
 const getTrades = getLedger.getTrades;
 
@@ -11,79 +11,92 @@ const getTrades = getLedger.getTrades;
 /** @type {Object.<string,User>} */
 var users = {};
 
+
 /**
  * @class
  * @param {{apikey:string,privkey:string}} auth
  * @member {string} name
  */
-function User (auth) {
-	var self = this;
-	log ('New user created');
-	var store = new UserStore (auth);
-	var kraken = new Kraken (auth);
-	var sockets = this.sockets = new SocketCollection ();
+class User {
+	private store : UserStore;
+	private kraken : Kraken;
+	public sockets : SocketCollection;
+	private username : string;
+	private useremail : string;
+	public balance : { [assetName: string]: number };
+	private ledger;
 
-	var name = store.get ('name', '');
+	constructor (auth) {
+		var self = this;
+		log ('New user created');
+		var store = new UserStore (auth);
+		var kraken = new Kraken (auth);
+		var sockets = this.sockets = new SocketCollection ();
+
+		this.username = store.get ('name', '');
+		var email = store.get ('email', '');
+
+
+		var balance = this.balance = store.get ('balance', {
+			ZEUR: 0
+		});
+		this.ledger = store.get ('ledger', []);
+	}
+
 	/**
 	 * @param {string=} newName 
 	 * @returns {string}
 	 */
-	this.name = newName => {
-		if (newName) store.set ('name', name = newName);
-		return name;
+	name (newName) {
+		if (newName) this.store.set ('name', this.username = newName);
+		return this.username;
 	};
 
-	var email = store.get ('email', '');
 	/**
 	 * @param {string=} newEmail 
 	 * @returns {string}
 	 */
-	this.email = newEmail => {
-		if (newEmail) store.set('email', email = newEmail);
-		return email;
+	email (newEmail) {
+		if (newEmail) this.store.set('email', this.useremail = newEmail);
+		return this.useremail;
 	};
-
-
-	var balance = this.balance = store.get ('balance', {
-		ZEUR: 0
-	}), ledger = store.get ('ledger', []);
 
 
 	/**
 	 * 
 	 * @param {()=>void} callback 
 	 */
-	function fetchBalance (callback) {
-		kraken.callAPI ('Balance', null, (err, result) => {
+	fetchBalance (callback) {
+		this.kraken.callAPI ('Balance', null, (err, result) => {
 			if (err) throw err;
 			for (var k in result) {
-				balance[k] = parseFloat (result[k]);
+				this.balance[k] = parseFloat (result[k]);
 			}
-			store.set ('balance', balance);
-			sockets.emit ('balance', {
-				balance: balance,
-				moneySpent: getMoneySpent (),
-				avgBuyPrice: getAvgBuyPrice (),
-				totalDeposit: getMoneyDeposited ()
+			this.store.set ('balance', this.balance);
+			this.sockets.emit ('balance', {
+				balance: this.balance,
+				moneySpent: this.getMoneySpent (),
+				avgBuyPrice: this.getAvgBuyPrice (),
+				totalDeposit: this.getMoneyDeposited ()
 			});
 			if (callback) callback ();
 		}, 10);
 	}
 
-	
+		
 	/**
 	 * 
 	 * @param {()=>void} callback 
 	 */
-	function updateLedger (callback) {
+	updateLedger (callback) {
 		log ('updateLedger();');
-		getLedger (kraken, ledger, changesFound => {
+		getLedger (this.kraken, this.ledger, changesFound => {
 			if (changesFound) {
-				log ('changed found!');
+				log ('changes found!');
 			} else {
 				log ('no changes found');
 			}
-			store.set ('ledger', ledger);
+			this.store.set ('ledger', this.ledger);
 			if (callback) callback ();
 		});
 	}
@@ -92,11 +105,11 @@ function User (auth) {
 	/**
 	 * @returns {Object.<string,number>}
 	 */
-	function getMoneySpent () {
+	getMoneySpent () {
 		var details = {
 			BCH: 0
 		};
-		getTrades (ledger).forEach (trade => {
+		getTrades (this.ledger).forEach (trade => {
 			var asset = trade.asset,
 					price = trade.price;
 			if (!details[asset]) details[asset] = 0;
@@ -105,17 +118,16 @@ function User (auth) {
 		});
 		return details;
 	}
-	this.getMoneySpent = getMoneySpent;
 
 
 	/**
 	 * @returns {Object.<string,number>}
 	 */
-	function getAvgBuyPrice () {
-		var remaining = Object.assign ({}, balance);
+	getAvgBuyPrice () {
+		var remaining = Object.assign ({}, this.balance);
 		var details = {};
-		var i = ledger.length - 1;
-		getTrades (ledger).reverse ().forEach (trade => {
+		var i = this.ledger.length - 1;
+		getTrades (this.ledger).reverse ().forEach (trade => {
 			var asset = trade.asset,
 					price = trade.price,
 					coins = trade.coins;
@@ -134,46 +146,43 @@ function User (auth) {
 				}
 			}
 		});
-		for (var k in balance) {
-			details[k] /= balance[k];
+		for (var k in this.balance) {
+			details[k] /= this.balance[k];
 		}
 		return details;
 	}
-	this.getAvgBuyPrice = getAvgBuyPrice;
 
 
 	/**
 	 * @returns {number}
 	 */
-	function getMoneyDeposited () {
+	getMoneyDeposited () {
 		var eur = 0;
-		for (var i = 0; i < ledger.length; i++) {
-			var deposit = ledger[i];
+		for (var i = 0; i < this.ledger.length; i++) {
+			var deposit = this.ledger[i];
 			if (deposit.type === 'deposit' && deposit.asset === 'ZEUR') {
 				eur += deposit.amount;
 			}
 		}
 		return eur;
 	}
-	this.getMoneyDeposited = getMoneyDeposited;
 
 
 	/**
 	 * 
 	 * @param {()=>void} callback 
 	 */
-	this.refreshBalance = callback => {
-		fetchBalance (() => {
-			updateLedger (() => {
+	refreshBalance = callback => {
+		this.fetchBalance (() => {
+			this.updateLedger (() => {
 				if (callback) callback ();
 			});
 		});
 	};
 
-	this._getFromStore = (varname, defaultValue) => {
-		return store.get (varname, defaultValue);
+	_getFromStore (varname, defaultValue) {
+		return this.store.get (varname, defaultValue);
 	};
-
 }
 
 
@@ -190,7 +199,7 @@ function getUser (auth) {
 	return users[uid];
 }
 
-getUser.byName = name => {
+function getUserByName (name) {
 	if (name.length === 0) return null;
 	for (var k in users) {
 		if (users[k].name ().toLowerCase () === name) {
@@ -200,4 +209,5 @@ getUser.byName = name => {
 	return null;
 };
 
-module.exports = getUser;
+export { User, getUser, getUserByName };
+export default getUser;

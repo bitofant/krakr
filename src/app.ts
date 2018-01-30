@@ -1,14 +1,22 @@
-const props = require ('./application-properties');
-const fs = require ('fs');
-const express = require ('express');
-const app = express ();
-const server = require ('http').createServer (app);
-const io = require ('socket.io') (server);
-const kraken = require ('./modules/kraken').singleton;
+import props from './application-properties';
+import fs = require ('fs');
 
-const findUser = require ('./modules/user/user').byName;
-const loadUsers = require ('./modules/user/user-loader');
-const UserSession = require ('./modules/user/user-session');
+import express = require ('express');
+const app = express ();
+
+import http = require ('http');
+const server = http.createServer (app);
+
+import socketIO = require ('socket.io');
+const io = socketIO (server);
+
+import { singleton as kraken} from './modules/kraken';
+// const cryptowatch = require ('./modules/cryptowat.ch/cryptowatch');
+const history = require ('./modules/history/history');
+
+import findUser from './modules/user/user';
+import loadUsers from './modules/user/user-loader';
+import UserSession from './modules/user/user-session';
 const bus = require ('./modules/event-bus');
 
 const logger = require ('./modules/helper/logger');
@@ -19,6 +27,7 @@ app.use ('/log/', logger.express);
 
 
 bus.once ('values_of_tradable_assets', () => {
+	log ('got asset values!');
 	server.listen (props.port, () => {
 		log ('App listening on port ' + server.address ().port);
 		loadUsers ();

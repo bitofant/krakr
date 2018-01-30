@@ -1,10 +1,13 @@
-var path = require('path')
 var webpack = require('webpack')
+var nodeExternals = require ('webpack-node-externals');
+var fs = require ('fs');
 
-module.exports = {
+var DIST_FOLDER = __dirname + '/dist/';
+
+const frontend = {
 	entry: './htdocs/index.js',
 	output: {
-		path: __dirname + '/htdocs',
+		path: DIST_FOLDER + '/htdocs',
 		publicPath: '/dist/',
 		filename: 'bundle.js'
   },
@@ -95,10 +98,72 @@ module.exports = {
   devtool: '#eval-source-map'
 }
 
+
+
+//#################################################################
+
+
+
+const backend = {
+  entry: './src/app.ts',
+  target: 'node',
+  externals: [
+    nodeExternals ()
+  ],
+  output: {
+    path: DIST_FOLDER,
+    publicPath: '/dist/',
+    filename: 'bundle.js',
+    libraryTarget: 'commonjs'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/
+      }
+    ]
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.jdon']
+  }
+}
+
+
+
+//#################################################################
+
+
+
+
+function copy (file) {
+  fs.copyFile ('./' + file, DIST_FOLDER + file, err => {
+    if (err) throw err;
+  });
+}
+
+
+
+//#################################################################
+
+
+
+
+copy ('htdocs/index.html');
+copy ('htdocs/favicon.ico');
+
+
+module.exports = [
+  frontend,
+  backend
+];
+
+
 if (process.env.NODE_ENV === 'production') {
-  module.exports.devtool = '#source-map'
+  module.exports.frontend.devtool = '#source-map'
   // http://vue-loader.vuejs.org/en/workflow/production.html
-  module.exports.plugins = (module.exports.plugins || []).concat([
+  module.exports.frontend.plugins = (module.exports.frontend.plugins || []).concat([
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"production"'
@@ -114,4 +179,6 @@ if (process.env.NODE_ENV === 'production') {
       minimize: true
     })
   ])
-}
+};
+
+

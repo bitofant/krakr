@@ -3,13 +3,14 @@ const ENV_DEV = 'development';
 
 const ENV_DEFAULT = ENV_PROD;
 
+
 const ENV = process.env.NODE_ENV || ENV_DEFAULT;
 console.log ('profile: ' + ENV);
 
 const IS_DEV = (ENV === ENV_DEV);
 const IS_PROD = (ENV === ENV_PROD);
 
-module.exports = {
+export default {
 	requestTimeout: 10 * 1000,
 	port: process.env.HTTP_PORT || process.env.PORT || 8080,
 	env: {
@@ -17,6 +18,8 @@ module.exports = {
 		dev: IS_DEV,
 		prod: IS_PROD
 	},
-	userStore: __dirname + '/user-store/',
+	userStore: './user-store/',
 	krakenDisabled: false
 };
+
+

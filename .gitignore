@@ -1,2 +1,7 @@
 node_modules
 user-store
+modules/helper/mongo-tunnel.json
+dist
+typings
+_DEPR
+other/tcp-tunnel/Dockerfile

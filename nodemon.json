@@ -1,12 +1,14 @@
 {
 	"ignore": [
 		".git",
-		"node_modules",
-		"htdocs",
+		"node_modules/*",
+		"htdocs/*",
 		".vscode",
 		"webpack.config.js",
-		"test",
-		"user-store"
+		"test/*",
+		"user-store/*",
+		"modules/*",
+		"src/*"
 	],
 	"env": {
 		"NODE_ENV": "development"

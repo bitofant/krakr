@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"module": "commonjs",
+		"outDir": "dist",
+		"sourceMap": true
+	},
+	"compileOnSave": true,
+	"files": [
+		"./typings/index.d.ts"
+	],
+	"include": [
+		"src/**/*.ts"
+	],
+	"exclude": [
+		"node_modules"
+	]
+}

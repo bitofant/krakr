@@ -1,10 +1,11 @@
 const fs = require ('fs');
-const props = require ('../../application-properties');
+import props from '../../application-properties';
 const log = require ('../helper/logger') (module);
 const getUser = require ('./user');
 
 
 function loadUsers () {
+	log (props.userStore);
 	fs.readdir (props.userStore, (err, files) => {
 		if (err) throw (err);
 		files.forEach (file => {
@@ -19,4 +20,4 @@ function loadUsers () {
 	});
 }
 
-module.exports = loadUsers;
+export default loadUsers;

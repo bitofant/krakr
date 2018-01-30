@@ -23,6 +23,7 @@
 		<div class="container">
 			<login v-if="!user.isLoggedin" />
 			<div v-else>
+				<!-- <random-donut/> -->
 				<compact-summary v-if="mobile" />
 				<currency-summary v-else />
 				<div class="row">
@@ -41,6 +42,7 @@ import Login from './login.vue';
 import CurrencySummary from './currency-summary.vue';
 import CompactSummary from './compact-summary.vue';
 import CurrencyDonut from './currency-donut.vue';
+// import RandomDonut from './random-donut.vue';
 import sock from '../sock';
 import user from '../js/user';
 
@@ -60,7 +62,8 @@ export default {
 		Login,
 		CurrencySummary,
 		CompactSummary,
-		CurrencyDonut
+		CurrencyDonut,
+		// RandomDonut
 	},
 	methods: {
 		emit: ev => {

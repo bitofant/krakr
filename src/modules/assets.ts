@@ -4,6 +4,14 @@ var to_export = {
 	tradableNames: [],
 	tradableList: [],
 	tradablePairs: [],
+	findNameByPair (pair) {
+		for (var i = 0; i < to_export.tradableNames.length; i++) {
+			var name = to_export.tradableNames[i];
+			var item = to_export[name];
+			if (item.pair === pair) return name;
+		}
+		return null;
+	},
 	//BEGIN_CURRENCY_SECTION
 	"BCH": {
 		"name": "Bitcoin Cash",
@@ -359,7 +367,7 @@ var to_export = {
 };
 
 for (var k in to_export) {
-	if (k === 'list' || k === 'names' || k.startsWith ('tradable')) continue;
+	if (k === 'list' || k === 'names' || k.startsWith ('tradable') || k === 'findNameByPair') continue;
 	to_export.names.push (k);
 	var asset = to_export[k];
 	to_export.list.push (asset);
@@ -369,13 +377,5 @@ for (var k in to_export) {
 		to_export.tradablePairs.push (asset.pair);
 	}
 }
-to_export.findNameByPair = pair => {
-	for (var i = 0; i < to_export.tradableNames.length; i++) {
-		var name = to_export.tradableNames[i];
-		var item = to_export[name];
-		if (item.pair === pair) return name;
-	}
-	return null;
-};
 
-module.exports = to_export;
+export default to_export;

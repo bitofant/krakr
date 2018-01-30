@@ -3,9 +3,7 @@ var webpack = require('webpack')
 var fs = require ('fs');
 
 var DIST_FOLDER = __dirname + '/dist/';
-if (fs.existsSync (DIST_FOLDER) === false) {
-  fs.mkdirSync (DIST_FOLDER);
-}
+
 
 const frontend = {
 	entry: './htdocs/index.js',
@@ -140,6 +138,12 @@ const frontend = {
 
 
 
+function ensureDirExistsSync (dir) {
+  if (!fs.existsSync (dir)) {
+    fs.mkdirSync (dir);
+  }
+}
+
 function copy (file) {
   fs.copyFile (__dirname + '/' + file, DIST_FOLDER + file, err => {
     if (err) throw err;
@@ -153,6 +157,7 @@ function copy (file) {
 
 
 
+ensureDirExistsSync (DIST_FOLDER + '/htdocs');
 copy ('htdocs/index.html');
 copy ('htdocs/favicon.ico');
 

@@ -23,7 +23,7 @@ import bus from './modules/event-bus';
 import { Logger, express as logger_express } from './modules/helper/logger';
 const log = Logger(module);
 
-app.use (express.static ('./htdocs'));
+app.use (express.static (__dirname + '/htdocs'));
 app.use ('/log/', logger_express);
 
 

@@ -138,8 +138,20 @@ const frontend = {
 
 
 
+/**
+ * 
+ * @param {string} dir 
+ */
 function ensureDirExistsSync (dir) {
   if (!fs.existsSync (dir)) {
+    var splitted = dir.split ('/');
+    function next (i) {
+      if (i < 1) return;
+      if (fs.existsSync (splitted.slice (0, i).join ('/'))) return;
+      next (i - 1);
+      fs.mkdirSync (splitted.slice (0, i).join ('/'));
+    }
+    next (splitted.length - 1);
     fs.mkdirSync (dir);
   }
 }

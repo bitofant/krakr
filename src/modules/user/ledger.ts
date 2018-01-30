@@ -1,4 +1,5 @@
-const log = require ('../helper/logger') (module);
+import logger from'../helper/logger';
+const log = logger (module);
 
 function reformatLedger (id, ledger) {
 	return Object.assign (ledger, {
@@ -122,6 +123,6 @@ function Trade (trade1, trade2) {
 	this.coins = trade1.amount;
 }
 
-updateLedgers.getTrades = getTrades;
+export { getTrades, updateLedgers };
 
-module.exports = updateLedgers;
+export default updateLedgers;

@@ -7,7 +7,6 @@
 		"webpack.config.js",
 		"test/*",
 		"user-store/*",
-		"modules/*",
 		"src/*"
 	],
 	"env": {

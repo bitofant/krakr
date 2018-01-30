@@ -1,12 +1,12 @@
-const assets = require ('../assets');
-const bus = require ('../event-bus');
-const log = require ('../helper/logger') (module);
-const fs = require ('fs');
-const kraken = require ('../kraken').singleton;
-const mongo = require ('../helper/mongo');
+import assets from '../assets';
+import bus from '../event-bus';
+import Logger from '../helper/logger';
+const log = Logger (module);
+import fs = require ('fs');
+import { singleton as kraken } from '../kraken';
+import mongo = require ('../helper/mongo');
 
 const DB_FILE = __dirname + '/db.json';
-
 
 var history = initHistory ();
 

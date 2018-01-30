@@ -3,7 +3,8 @@ const bus = require ('../event-bus');
 import assets from '../assets';
 import { singleton as kraken } from '../kraken';
 
-const log = require ('../helper/logger') (module);
+import logger from '../helper/logger';
+const log = logger(module);
 
 /**
  * 

@@ -18,7 +18,7 @@ export default {
 		dev: IS_DEV,
 		prod: IS_PROD
 	},
-	userStore: './user-store/',
+	userStore: __dirname + '/user-store/',
 	krakenDisabled: false
 };
 

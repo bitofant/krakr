@@ -126,7 +126,7 @@ const backend = {
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jdon']
+    extensions: ['.tsx', '.ts', '.js', '.json']
   }
 }
 
@@ -156,7 +156,7 @@ copy ('htdocs/favicon.ico');
 
 module.exports = [
   frontend,
-  backend
+  //backend
 ];
 
 

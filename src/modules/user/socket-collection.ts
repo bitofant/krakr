@@ -1,4 +1,5 @@
-const log = require ('../helper/logger') (module);
+import logger from '../helper/logger';
+const log = logger (module);
 
 
 class SocketCollection {

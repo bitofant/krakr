@@ -1,7 +1,8 @@
 const fs = require ('fs');
 import props from '../../application-properties';
-const log = require ('../helper/logger') (module);
-const getUser = require ('./user');
+import logger from '../helper/logger';
+const log = logger(module);
+import getUser from './user';
 
 
 function loadUsers () {

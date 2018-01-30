@@ -1,11 +1,11 @@
 import Kraken from '../kraken';
 import UserStore from './user-store';
-const bus = require ('../event-bus');
-const assets = require ('../assets');
-const log = require ('../helper/logger') (module);
+import bus from '../event-bus';
+import assets from '../assets';
+import logger from '../helper/logger';
+const log = logger (module);
 import SocketCollection from './socket-collection';
-const getLedger = require ('./ledger');
-const getTrades = getLedger.getTrades;
+import { updateLedgers as getLedger, getTrades } from './ledger';
 
 
 /** @type {Object.<string,User>} */

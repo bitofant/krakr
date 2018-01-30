@@ -12,18 +12,18 @@ const io = socketIO (server);
 
 import { singleton as kraken} from './modules/kraken';
 // const cryptowatch = require ('./modules/cryptowat.ch/cryptowatch');
-const history = require ('./modules/history/history');
+import history from './modules/history/history';
 
 import findUser from './modules/user/user';
 import loadUsers from './modules/user/user-loader';
 import UserSession from './modules/user/user-session';
-const bus = require ('./modules/event-bus');
+import bus from './modules/event-bus';
 
-const logger = require ('./modules/helper/logger');
-const log = logger (module);
+import { Logger, express as logger_express } from './modules/helper/logger';
+const log = Logger(module);
 
 app.use (express.static ('./htdocs'));
-app.use ('/log/', logger.express);
+app.use ('/log/', logger_express);
 
 
 bus.once ('values_of_tradable_assets', () => {

@@ -1,9 +1,10 @@
 const krakenApi = require ('kraken-api');
-const props = require ('../application-properties');
-const bus = require ('./event-bus');
-const CallRateLimiter = require ('./helper/kraken-callrate');
+import props from '../application-properties';
+import bus from './event-bus';
+import CallRateLimiter from './helper/kraken-callrate';
 import assets from './assets';
-const log = require('./helper/logger')(module);
+import logger from './helper/logger';
+const log = logger (module);
 
 const T_SECOND = 1000;
 const T_MINUTE = 60 * T_SECOND;

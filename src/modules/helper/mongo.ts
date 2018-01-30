@@ -3,19 +3,19 @@ const log = logger (module);
 
 const fs = require ('fs');
 //import { MongoClient, Db } from 'mongodb';
-//import { Db } from 'mongodb';
-const mongodb = require ('mongodb');
-const MongoClient = mongodb.MongoClient;
+// import { Db } from 'mongodb';
+import mongodb = require ('mongodb');
+const MongoClient  = mongodb.MongoClient;
 const Long = mongodb.Long;
 
 
-declare interface Collection {
-	insertOne: (object: any, callback: (err: Error,result: any) => void) => void
-}
+// declare interface Collection {
+// 	insertOne: (object: any, callback: (err: Error,result: any) => void) => void
+// }
 
-declare interface Db {
-	collection: (name: string) => Collection
-}
+// declare interface Db {
+// 	collection: (name: string) => Collection
+// }
 
 
 const mongo_config = {
@@ -39,7 +39,7 @@ MongoClient.connect ('mongodb://' + mongo_config.host + ':' + mongo_config.port,
 
 log ('connecting to "mongodb://' + mongo_config.host + ':' + mongo_config.port + '"', 'yellow');
 
-function getDB (callback : (db: Db) => void) {
+function getDB (callback : (db: mongodb.Db) => void) {
 	if (db !== null) process.nextTick (callback);
 	else dbListeners.push (callback);
 }

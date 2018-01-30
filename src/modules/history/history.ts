@@ -22,7 +22,7 @@ mongo (db => {
 			assets: values
 		};
 		hist.insertOne ({
-			timestamp: Long (now),
+			timestamp: Long.fromNumber (now),
 			assets: values
 		}, (err, result) => {
 			if (err) throw err;

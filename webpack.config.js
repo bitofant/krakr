@@ -3,6 +3,9 @@ var webpack = require('webpack')
 var fs = require ('fs');
 
 var DIST_FOLDER = __dirname + '/dist/';
+if (fs.existsSync (DIST_FOLDER) === false) {
+  fs.mkdirSync (DIST_FOLDER);
+}
 
 const frontend = {
 	entry: './htdocs/index.js',

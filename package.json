@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "node test/_test.js",
-    "build": "webpack",
+    "build": "npm run webpack && npm run tsc",
     "build:prod": "NODE_ENV=production npm run build",
     "start": "NODE_ENV=development HTTP_PORT=8080 npm-run-all --parallel watch:frontend watch:backend nodemon:server",
     "watch:frontend": "webpack --watch",
@@ -13,9 +13,10 @@
     "nodemon:server": "nodemon dist/app.js",
     "assets": "node update-assets.js",
     "start-prod": "NODE_ENV=production HTTP_PORT=8071 node app.js",
-    "forever:stop": "forever stop app.js",
-    "forever:start": "NODE_ENV=production HTTP_PORT=8071 forever start app.js",
-    "forever": "NODE_ENV=production HTTP_PORT=8071 forever restart app.js",
+    "forever:stop": "forever stop dist/app.js",
+    "forever:start": "NODE_ENV=production HTTP_PORT=8071 forever start dist/app.js",
+    "forever": "NODE_ENV=production HTTP_PORT=8071 forever restart dist/app.js",
+    "webpack": "webpack",
     "tsc": "tsc",
     "typings": "typings"
   },

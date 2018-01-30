@@ -185,7 +185,9 @@ function refreshValuesOfTradables () {
 				}
 				data_cache.tradable_timestamp = Date.now ();
 				try {
-					bus.emit ('values_of_tradable_assets', data_cache.tradables);
+					process.nextTick (() => {
+						bus.emit ('values_of_tradable_assets', data_cache.tradables);
+					});
 				} catch (err) {
 					console.log (err);
 					log ('error dispatching event bus.emit("values_of_tradable_assets", {...}) !', 'red');

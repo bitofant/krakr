@@ -138,7 +138,7 @@ const frontend = {
 
 
 function copy (file) {
-  fs.copyFile ('./' + file, DIST_FOLDER + file, err => {
+  fs.copyFile (__dirname + '/' + file, DIST_FOLDER + file, err => {
     if (err) throw err;
   });
 }

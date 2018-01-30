@@ -18,7 +18,8 @@
     "forever": "NODE_ENV=production HTTP_PORT=8071 forever restart dist/app.js",
     "webpack": "webpack",
     "tsc": "tsc",
-    "typings": "typings"
+    "typings": "typings",
+    "refresh": "git pull && npm run build && npm run forever"
   },
   "author": "joeran.tesse@iteratec.de",
   "license": "ISC",

@@ -7,5 +7,5 @@ EXPOSE ${HTTP_PORT}
 
 WORKDIR $HOME
 COPY . $HOME
-RUN cd $HOME && npm install
-CMD ["npm","start"]
+RUN cd $HOME && npm install && npm build:prod
+CMD ["node","dist/app.js"]

@@ -35,8 +35,7 @@ function sendMail (opts: {
 	// 	callback (err);
 	// });
 	transporter.sendMail (opts, (err, info) => {
-		if (err) throw err;
-		//console.log (info);
+		callback (err);
 	});
 }
 

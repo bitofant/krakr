@@ -9,6 +9,7 @@
     "build:prod": "NODE_ENV=production npm run build && npm run uglify:frontend",
     "uglify:frontend": "uglifyjs -c -m -o dist/htdocs/bundle.js dist/htdocs/bundle.js",
     "start": "NODE_ENV=development HTTP_PORT=8080 npm-run-all --parallel watch:frontend watch:backend nodemon:server",
+    "start:8071": "NODE_ENV=development HTTP_PORT=8071 npm-run-all --parallel watch:frontend watch:backend nodemon:server",
     "watch:frontend": "webpack --watch",
     "watch:backend": "tsc --watch -p tsconfig.json",
     "nodemon:server": "nodemon dist/app.js",

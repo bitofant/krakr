@@ -49,14 +49,14 @@ mongo (db => {
 				var midStoch = fn.stochastic.mid (dataset).d;
 				var isbought: boolean = didBuy[k] || false;
 				if (!isbought) {
-					if (midStoch.getClose () < .4) {
+					if (midStoch.getClose () < .5) {
 							if (fn.macd.fast (dataset).hist.getClose () > 0) {
 							var midMACD = fn.macd.mid (dataset);
 							if (midMACD.hist.getClose () > 0) {
 								if (fn.macd.slow (dataset).hist.getClose () > 0) {
 									var wasBelow20pct = false;
 									for (var i = 0; i < props.checkLastXStochasticBrackets; i++) {
-										if (midStoch.data[i].low < .2) {
+										if (midStoch.data[i].low < .3) {
 											wasBelow20pct = true;
 											break;
 										}
@@ -86,7 +86,7 @@ mongo (db => {
 						(fn.macd.fast (dataset).hist.getClose () < 0 ? 2 : 0) +
 						(fn.macd.mid  (dataset).hist.getClose () < 0 ? 2 : 0) +
 						(fn.macd.slow (dataset).hist.getClose () < 0 ? 4 : 0) +
-						(fn.stochastic.mid (dataset).d.getClose () > .8 ? 1 : 0)
+						(fn.stochastic.mid (dataset).d.getClose () > .75 ? 1 : 0)
 					);
 					if (sum > 4) {
 						if (props.printBuySellStrategyHints) log ('sell ' + k + ' as fast as possible!!!', 'red');

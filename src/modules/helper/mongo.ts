@@ -40,7 +40,9 @@ MongoClient.connect ('mongodb://' + mongo_config.host + ':' + mongo_config.port,
 log ('connecting to "mongodb://' + mongo_config.host + ':' + mongo_config.port + '"', 'yellow');
 
 function getDB (callback : (db: mongodb.Db) => void) {
-	if (db !== null) process.nextTick (callback);
+	if (db !== null) process.nextTick (() => {
+		callback (db);
+	});
 	else dbListeners.push (callback);
 }
 

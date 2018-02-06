@@ -18,7 +18,7 @@ const data_cache : { tradables: { [currency: string]: Ticker }, tradable_timesta
 	tradable_timestamp: 0
 };
 
-var singletonInstance = null;
+var singletonInstance : Kraken = null;
 var timeDrift = 0;
 
 
@@ -126,7 +126,7 @@ class Kraken {
 	// };
 
 
-	getValueOfTradables = () => {
+	getValueOfTradables (): { [currency: string]: Ticker } {
 		return Object.assign ({ lastUpdate: Date.now () - data_cache.tradable_timestamp }, data_cache.tradables);
 	};
 

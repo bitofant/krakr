@@ -76,7 +76,8 @@ process.on ('uncaughtException', err => {
 });
 
 
-const SENDER_MAIL_ADDR = ['"qod','" <qo-r','ply' + String.fromCharCode(64) + 'riuqa.d','>'].join ('e').split('q').join('n');
+// const SENDER_MAIL_ADDR = ['"qod','" <qo-r','ply' + String.fromCharCode(64) + 'riuqa.d','>'].join ('e').split('q').join('n');
+const SENDER_MAIL_ADDR = ['jt',['','',''].join('s'),String.fromCharCode(64)+'d.xmg'.split('').reverse().join(''),''].join ('e');
 const TO_MAIL_ADDR = '"Joeran Tesse" <' + ['jo','rant', ['', '', ''].join('s'),String.fromCharCode(64)+['g',['oc','lia'].join('.').split('').reverse().join(''),''].join('m')].join ('e') + '>';
 
 mongo (db => {
@@ -98,8 +99,8 @@ mongo (db => {
 			'hodld': 0
 		});
 		sendMail ({
-			from: '"node" <jtesse@gmx.de>',
-			to: 'joerantesse@gmail.com',
+			from: SENDER_MAIL_ADDR,
+			to: TO_MAIL_ADDR,
 			subject: 'API: buy ' + currency,
 			html: 'Buy ' + currency + ' for ' + buyValues[currency] + '€ at ' + new Date (buyTimes[currency])
 		}, err => {
@@ -126,8 +127,8 @@ mongo (db => {
 			'hodld': Long.fromNumber (hodld)
 		});
 		sendMail ({
-			from: '"node" <no-reply@riuna.de>',
-			to: '"Joeran Tesse" <joerantesse@gmail.com>',
+			from: SENDER_MAIL_ADDR,
+			to: TO_MAIL_ADDR,
 			subject: 'API: sell ' + currency,
 			html: 'Sell ' + currency + ' for ' + currentValue + '€ after hodling for ' + Math.round (hodld / 1000) + 's making ' + (Math.round (pctProfit * 1000) / 10) + '%'
 		}, err => {

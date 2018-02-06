@@ -1,5 +1,5 @@
 import nodemailer = require ('nodemailer');
-const auth = require ('./mail-auth.js');
+const auth: {username:string,password:string} = require ('./mail-auth.js');
 
 const transporter = nodemailer.createTransport ({
 	host: 'mail.gmx.net',

@@ -24,7 +24,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "bch",
 			"route": "https://api.cryptowat.ch/assets/bch"
-		}
+		},
+		"price_decimals": 1
 	},
 	"DASH": {
 		"name": "Dash",
@@ -37,7 +38,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "dash",
 			"route": "https://api.cryptowat.ch/assets/dash"
-		}
+		},
+		"price_decimals": 3
 	},
 	"EOS": {
 		"name": "EOS",
@@ -114,7 +116,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "etc",
 			"route": "https://api.cryptowat.ch/assets/etc"
-		}
+		},
+		"price_decimals": 3
 	},
 	"XETH": {
 		"name": "Ethereum",
@@ -127,7 +130,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "eth",
 			"route": "https://api.cryptowat.ch/assets/eth"
-		}
+		},
+		"price_decimals": 2
 	},
 	"XICN": {
 		"name": "Iconomi",
@@ -153,7 +157,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "ltc",
 			"route": "https://api.cryptowat.ch/assets/ltc"
-		}
+		},
+		"price_decimals": 2
 	},
 	"XMLN": {
 		"name": "Melonport",
@@ -192,7 +197,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "rep",
 			"route": "https://api.cryptowat.ch/assets/rep"
-		}
+		},
+		"price_decimals": 3
 	},
 	"XXBT": {
 		"name": "Bitcoin",
@@ -205,7 +211,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "btc",
 			"route": "https://api.cryptowat.ch/assets/btc"
-		}
+		},
+		"price_decimals": 1
 	},
 	"XXDG": {
 		"name": "Dogecoin",
@@ -244,7 +251,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "xmr",
 			"route": "https://api.cryptowat.ch/assets/xmr"
-		}
+		},
+		"price_decimals": 2
 	},
 	"XXRP": {
 		"name": "Ripple",
@@ -257,7 +265,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "xrp",
 			"route": "https://api.cryptowat.ch/assets/xrp"
-		}
+		},
+		"price_decimals": 5
 	},
 	"XXVN": {
 		"name": "XVN",
@@ -283,7 +292,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "zec",
 			"route": "https://api.cryptowat.ch/assets/zec"
-		}
+		},
+		"price_decimals": 3
 	},
 	"ZCAD": {
 		"name": "CAD",
@@ -377,5 +387,26 @@ for (var k in to_export) {
 		to_export.tradablePairs.push (asset.pair);
 	}
 }
+
+//TYPESCRIPT
+function getAsset (name: string): {
+	name: string,
+	symbol: string,
+	pair: string,
+	aclass: string,
+	altname: string,
+	decimals: number,
+	display_decimals: number,
+	price_decimals: number,
+	cryptowatch: {
+		symbol: string,
+		route: string
+	}
+} {
+	return to_export[name];
+}
+
+export { getAsset, to_export as assets };
+//TYPESCRIPT
 
 export default to_export;

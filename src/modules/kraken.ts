@@ -69,9 +69,9 @@ class Kraken {
 		});
 	}
 
-	callAPI (fn, args, callback, numTries) {
+	callAPI (fn: string, args: any, callback: (err:Error,result?:any)=>void, numTries: number) {
 		if (props.krakenDisabled) {
-			process.nextTick (() => {+
+			process.nextTick (() => {
 				callback (new Error ('Kraken unavailable'));
 			});
 			return;
@@ -102,6 +102,7 @@ class Kraken {
 					}).catch (err => {
 						if (done) return;
 						log ('    ...' + fn + '.error!');
+						log (err.stack);
 						lastErr = err;
 						tryit ();
 					});
@@ -173,7 +174,7 @@ function refreshValuesOfTradables () {
 		singletonInstance.callAPI ('Ticker', {
 			pair: assets.tradablePairs.join (',')
 		}, (err, result) => {
-			if (err) log (err);
+			if (err) log (err.stack);
 			else {
 				for (var pair in result) {
 					assets.names.forEach (assetName => {

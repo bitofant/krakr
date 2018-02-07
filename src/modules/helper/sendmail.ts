@@ -1,16 +1,20 @@
 import nodemailer = require ('nodemailer');
+import props from '../../application-properties';
 const auth: {username:string,password:string} = require ('./mail-auth.js');
 
-const transporter = nodemailer.createTransport ({
-	host: 'mail.gmx.net',
-	port: 587,
-	tls: {
-		ciphers: 'SSLv3',
-		rejectUnauthorized: false
-	},
-	debug: true,
-	auth: auth
-});
+var transporter = null;
+setTimeout (() => {
+	transporter = nodemailer.createTransport ({
+	 host: 'mail.gmx.net',
+	 port: 587,
+	 tls: {
+		 ciphers: 'SSLv3',
+		 rejectUnauthorized: false
+	 },
+	 debug: true,
+	 auth: auth
+ });
+}, 5000);
 
 
 
@@ -34,6 +38,8 @@ function sendMail (opts: {
 	// sendmail (opts, (err, reply) => {
 	// 	callback (err);
 	// });
+	if (props.disableEMails && callback) return (callback (null));
+	if (transporter === null) return callback (new Error ('not initialized yet'));
 	transporter.sendMail (opts, (err, info) => {
 		callback (err);
 	});

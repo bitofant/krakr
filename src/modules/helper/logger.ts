@@ -81,11 +81,21 @@ const baseHTML = `<!DOCTYPE html>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" crossorigin="anonymous">
 		<title>Log</title>
+		<style>
+			.fadingrow {
+				opacity: 0;
+				transition: opacity .5s;
+			}
+			td {
+				font-family: monospace;
+				font-size: 120%;
+			}
+		</style>
 	</head>
 	<body>
 		<div class="container-fluid">
 			<h1>Log</h1>
-			<table class="table">
+			<table class="table table-sm">
 				<thead>
 					<th>Date</th>
 					<th>Time</th>
@@ -101,11 +111,63 @@ const baseHTML = `<!DOCTYPE html>
 		<script>
 			var basePath = location.href;
 			if (!basePath.endsWith ('/')) basePath += '/';
-			$.ajax (basePath + 'since/0', {
-				success: data => {
-					console.log (data);
-				}
+			function nDigits (n, digits) {
+				var sn = '' + n;
+				while (sn.length < digits) sn = '0' + sn;
+				return sn;
 			}
+			function twoDigits (n) {
+				return nDigits (n, 2);
+			}
+			var content = $('#content');
+			var latest = 0;
+			var inStepping = false;
+			function refresh () {
+				$.ajax (basePath + 'since/' + latest, {
+					success: data => {
+						if (data.length < 1) return;
+						latest = data[data.length - 1].t;
+						var rows = [];
+						data.forEach (item => {
+							var row = document.createElement ('tr');
+							var d = new Date (item.t);
+							var date = d.getFullYear () + '-' + twoDigits (d.getMonth () + 1) + '-' + twoDigits (d.getDate ());
+							var time = twoDigits (d.getHours ()) + ':' + twoDigits (d.getMinutes ()) + ':' + twoDigits (d.getSeconds ()) + '<span style="opacity:.5">.' + nDigits (d.getMilliseconds (), 3) + '</span>';
+							row.innerHTML = '<td>' + date + '</td><td>' + time + '</td><td>' + item.n + '</td><td>' + item.m + '</td>';
+							row.className = 'fadingrow';
+							content.append (row);
+							rows.push (row);
+						});
+						var se = document.body.parentElement
+						var scroll = se.scrollTop, step = 1;
+						function stepIt () {
+							if (scroll > se.scrollTop) {
+								console.log ('done;');
+								inStepping = false;
+								return;
+							} else if (scroll < se.scrollTop) {
+								scroll = se.scrollTop;
+							}
+							scroll += step | 0;
+							if (step < 20) step = step * 1.15;
+							se.scrollTop = scroll;
+							window.requestAnimationFrame (stepIt);
+						}
+						if (!inStepping) {
+							inStepping = true;
+							stepIt ();
+						}
+						//var = rows[rows.length - 1].offsetTop + 1000;
+						var visStep = 500 / (rows.length + 2) | 0;
+						rows.forEach ((row, i) => {
+							setTimeout (() => {
+								row.style.opacity = 1;
+							}, (i+1) * visStep);
+						});
+					}
+				});
+			}
+			setInterval (refresh, 500);
 		</script>
 	</body>
 </html>`;
@@ -118,7 +180,7 @@ const baseHTML = `<!DOCTYPE html>
  * @param {*} next 
  */
 function express (req, res, next) {
-	console.log (req.url);
+	// console.log (req.url);
 	if (req.url === '/') {
 		res.send (baseHTML);
 	} else if (req.url.startsWith ('/since/')) {

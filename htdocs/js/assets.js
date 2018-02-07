@@ -4,6 +4,14 @@ var to_export = {
 	tradableNames: [],
 	tradableList: [],
 	tradablePairs: [],
+	findNameByPair (pair) {
+		for (var i = 0; i < to_export.tradableNames.length; i++) {
+			var name = to_export.tradableNames[i];
+			var item = to_export[name];
+			if (item.pair === pair) return name;
+		}
+		return null;
+	},
 	//BEGIN_CURRENCY_SECTION
 	"BCH": {
 		"name": "Bitcoin Cash",
@@ -16,7 +24,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "bch",
 			"route": "https://api.cryptowat.ch/assets/bch"
-		}
+		},
+		"price_decimals": 1
 	},
 	"DASH": {
 		"name": "Dash",
@@ -29,7 +38,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "dash",
 			"route": "https://api.cryptowat.ch/assets/dash"
-		}
+		},
+		"price_decimals": 3
 	},
 	"EOS": {
 		"name": "EOS",
@@ -106,7 +116,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "etc",
 			"route": "https://api.cryptowat.ch/assets/etc"
-		}
+		},
+		"price_decimals": 3
 	},
 	"XETH": {
 		"name": "Ethereum",
@@ -119,7 +130,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "eth",
 			"route": "https://api.cryptowat.ch/assets/eth"
-		}
+		},
+		"price_decimals": 2
 	},
 	"XICN": {
 		"name": "Iconomi",
@@ -145,7 +157,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "ltc",
 			"route": "https://api.cryptowat.ch/assets/ltc"
-		}
+		},
+		"price_decimals": 2
 	},
 	"XMLN": {
 		"name": "Melonport",
@@ -184,7 +197,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "rep",
 			"route": "https://api.cryptowat.ch/assets/rep"
-		}
+		},
+		"price_decimals": 3
 	},
 	"XXBT": {
 		"name": "Bitcoin",
@@ -197,7 +211,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "btc",
 			"route": "https://api.cryptowat.ch/assets/btc"
-		}
+		},
+		"price_decimals": 1
 	},
 	"XXDG": {
 		"name": "Dogecoin",
@@ -236,7 +251,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "xmr",
 			"route": "https://api.cryptowat.ch/assets/xmr"
-		}
+		},
+		"price_decimals": 2
 	},
 	"XXRP": {
 		"name": "Ripple",
@@ -249,7 +265,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "xrp",
 			"route": "https://api.cryptowat.ch/assets/xrp"
-		}
+		},
+		"price_decimals": 5
 	},
 	"XXVN": {
 		"name": "XVN",
@@ -275,7 +292,8 @@ var to_export = {
 		"cryptowatch": {
 			"symbol": "zec",
 			"route": "https://api.cryptowat.ch/assets/zec"
-		}
+		},
+		"price_decimals": 3
 	},
 	"ZCAD": {
 		"name": "CAD",
@@ -359,7 +377,7 @@ var to_export = {
 };
 
 for (var k in to_export) {
-	if (k === 'list' || k === 'names' || k.startsWith ('tradable')) continue;
+	if (k === 'list' || k === 'names' || k.startsWith ('tradable') || k === 'findNameByPair') continue;
 	to_export.names.push (k);
 	var asset = to_export[k];
 	to_export.list.push (asset);
@@ -369,13 +387,7 @@ for (var k in to_export) {
 		to_export.tradablePairs.push (asset.pair);
 	}
 }
-to_export.findNameByPair = pair => {
-	for (var i = 0; i < to_export.tradableNames.length; i++) {
-		var name = to_export.tradableNames[i];
-		var item = to_export[name];
-		if (item.pair === pair) return name;
-	}
-	return null;
-};
+
+
 
 export default to_export;

@@ -6,6 +6,8 @@ import logger from '../helper/logger';
 const log = logger (module);
 import SocketCollection from './socket-collection';
 import { updateLedgers as getLedger, getTrades } from './ledger';
+import { EventEmitter } from 'events';
+import { Trader } from './trading/trader';
 
 
 /** @type {Object.<string,User>} */
@@ -19,28 +21,33 @@ var users = {};
  */
 class User {
 	private store : UserStore;
-	private kraken : Kraken;
+	public kraken : Kraken;
 	public sockets : SocketCollection;
 	private username : string;
 	private useremail : string;
 	public balance : { [assetName: string]: number };
 	private ledger;
+	public bus: EventEmitter = new EventEmitter ();
+	private trader: Trader;
 
 	constructor (auth) {
 		var self = this;
 		log ('New user created');
-		var store = new UserStore (auth);
-		var kraken = new Kraken (auth);
+		var store = this.store = new UserStore (auth);
+		var kraken = this.kraken = new Kraken (auth);
 		var sockets = this.sockets = new SocketCollection ();
 
 		this.username = store.get ('name', '');
 		var email = store.get ('email', '');
 
-
 		var balance = this.balance = store.get ('balance', {
 			ZEUR: 0
 		});
 		this.ledger = store.get ('ledger', []);
+
+		if (this.username === 'Joeranss') {
+			this.trader = new Trader (this);
+		}
 	}
 
 	/**
@@ -69,8 +76,17 @@ class User {
 	fetchBalance (callback) {
 		this.kraken.callAPI ('Balance', null, (err, result) => {
 			if (err) throw err;
+			var changed: Array<{ asset:string, oldValue:number, newValue:number}> = [];
 			for (var k in result) {
-				this.balance[k] = parseFloat (result[k]);
+				var newValue = parseFloat (result[k]);
+				if (newValue !== this.balance[k]) {
+					changed.push ({
+						asset: k,
+						oldValue: this.balance[k],
+						newValue: newValue
+					});
+				}
+				this.balance[k] = newValue;
 			}
 			this.store.set ('balance', this.balance);
 			this.sockets.emit ('balance', {
@@ -79,6 +95,12 @@ class User {
 				avgBuyPrice: this.getAvgBuyPrice (),
 				totalDeposit: this.getMoneyDeposited ()
 			});
+			if (changed.length > 0) {
+				changed.forEach (change => {
+					this.bus.emit ('balance:' + change.asset, change);
+				});
+				this.bus.emit ('balance', changed);
+			}
 			if (callback) callback ();
 		}, 10);
 	}

@@ -11,8 +11,8 @@
 <template>
 	<div class="row" style="overflow:auto">
 		<h1>Currencies <span style="font-size:50%;font-family:monospace">{{ lastUpdateDelta }}</span></h1>
-		<table class="table">
-			<thead>
+		<table class="table table-sm table-striped">
+			<thead class="thead-dark">
 				<th>Currency</th>
 				<th class="number">Last Trade</th>
 				<th class="number">Avg. Buy</th>

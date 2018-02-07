@@ -149,7 +149,10 @@ const baseHTML = `<!DOCTYPE html>
 							function appendTD (text, i) {
 								var td = document.createElement ('td');
 								if (i < 3) td.innerHTML = text;
-								else td.innerText = text;
+								else {
+									td.style.whiteSpace = 'pre';
+									td.innerText = text;
+								}
 								row.appendChild (td);
 							}
 							[

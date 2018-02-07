@@ -51,17 +51,23 @@ var fn = {
 
 
 var didBuy: { [currency:string]: boolean } = {
-	BCH: true
+	BCH: true,
+	XETH: true,
+	DASH: true,
+	XREP: true,
+	XXBT: true,
+	XXMR: true,
+	XXRP: true
 };
 
-setTimeout (() => {
-	didBuy.BCH = true;
-	bus.emit ('buy', 'BCH');
-	setTimeout (() => {
-		didBuy.BCH = false;
-		bus.emit ('sell', 'BCH');
-	}, 2000);
-}, 6000);
+// setTimeout (() => {
+// 	didBuy.BCH = true;
+// 	bus.emit ('buy', 'BCH');
+// 	setTimeout (() => {
+// 		didBuy.BCH = false;
+// 		bus.emit ('sell', 'BCH');
+// 	}, 2000);
+// }, 6000);
 
 mongo (db => {
 	var ticker = db.collection ('ticker');

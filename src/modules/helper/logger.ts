@@ -139,7 +139,7 @@ const baseHTML = `<!DOCTYPE html>
 							rows.push (row);
 						});
 						var se = document.body.parentElement
-						var scroll = se.scrollTop, step = 1;
+						var scroll = se.scrollTop, step = (se.scrollHeight - se.scrollTop - window.innerHeight > 1000) ? 50 : 1;
 						function stepIt () {
 							if (scroll > se.scrollTop) {
 								console.log ('done;');

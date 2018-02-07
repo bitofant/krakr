@@ -27,7 +27,7 @@ export default {
 	requireMACDtoBePositive: false,
 	printBuySellStrategyHints: true,
 	makeBuyAndSellPricesUnrealistic: true,
-	disableEMails: false
+	disableEMails: IS_DEV
 };
 
 

@@ -17,13 +17,21 @@ const colors : {[name : string]: string} = {
 
 var maxNameLength : number = 0;
 
-var log : Array<{ n:string, t:number, m:string }> = [];
+var log : Array<{ n:string, t:number, m:string, c:string }> = [];
 
-function logEntry (name, timestamp, msg) {
+function logEntry (name, timestamp, msg, color) {
+	var c = 'white';
+	for (var k in colors) {
+		if (colors[k] === color) {
+			c = k;
+			break;
+		}
+	}
 	log.push ({
 		n: name,
 		t: timestamp,
-		m: msg
+		m: msg,
+		c: c
 	});
 	if (log.length > MAX_LOG_LENGTH) {
 		log.splice (0, LOG_CHOP_SIZE);
@@ -43,9 +51,9 @@ function Logger (loggerID : any, defaultColor : any=null) {
 
 	function Log (msg : string, color : string=null) {
 		var d = new Date ();
-		logEntry (name, d.getTime (), msg);
 		var c = colors[color] || color || defaultCol;
 		var cr = c === '' ? '' : colors.reset;
+		logEntry (name, d.getTime (), msg, c);
 		console.log (c + timestamp (d) + cr + c + '|' + fixedLengthString (name, maxNameLength, '.') + cr + c + ': ' + msg + cr);
 	}
 	return Log;
@@ -82,6 +90,10 @@ const baseHTML = `<!DOCTYPE html>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" crossorigin="anonymous">
 		<title>Log</title>
 		<style>
+			body {
+				background: #000;
+				color: #fff;
+			}
 			.fadingrow {
 				opacity: 0;
 				transition: opacity .5s;
@@ -95,7 +107,7 @@ const baseHTML = `<!DOCTYPE html>
 	<body>
 		<div class="container-fluid">
 			<h1>Log</h1>
-			<table class="table table-sm">
+			<table class="table table-sm table-dark">
 				<thead>
 					<th>Date</th>
 					<th>Time</th>
@@ -130,10 +142,22 @@ const baseHTML = `<!DOCTYPE html>
 						var rows = [];
 						data.forEach (item => {
 							var row = document.createElement ('tr');
+							row.style.color = item.c;
 							var d = new Date (item.t);
 							var date = d.getFullYear () + '-' + twoDigits (d.getMonth () + 1) + '-' + twoDigits (d.getDate ());
-							var time = twoDigits (d.getHours ()) + ':' + twoDigits (d.getMinutes ()) + ':' + twoDigits (d.getSeconds ()) + '<span style="opacity:.5">.' + nDigits (d.getMilliseconds (), 3) + '</span>';
-							row.innerHTML = '<td>' + date + '</td><td>' + time + '</td><td>' + item.n + '</td><td>' + item.m + '</td>';
+							var time = twoDigits (d.getHours ()) + ':' + twoDigits (d.getMinutes ()) + ':' + twoDigits (d.getSeconds ()) + '<span style="opacity:.66">.' + nDigits (d.getMilliseconds (), 3) + '</span>';
+							function appendTD (text, i) {
+								var td = document.createElement ('td');
+								if (i < 3) td.innerHTML = text;
+								else td.innerText = text;
+								row.appendChild (td);
+							}
+							[
+								date,
+								time,
+								item.n,
+								item.m
+							].forEach (appendTD);
 							row.className = 'fadingrow';
 							content.append (row);
 							rows.push (row);

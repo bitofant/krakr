@@ -11,8 +11,6 @@ import socketIO = require ('socket.io');
 const io = socketIO (server);
 
 import { singleton as kraken} from './modules/kraken';
-// const cryptowatch = require ('./modules/cryptowat.ch/cryptowatch');
-console.log ('importing history');
 import history from './modules/history/history';
 history.a = 'C';
 import findUser from './modules/user/user';

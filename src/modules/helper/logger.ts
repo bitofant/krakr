@@ -1,7 +1,7 @@
 import fs = require ('fs');
 const props = require ('../../application-properties');
 const MAX_LOG_LENGTH = 50000;
-const LOG_CHOP_SIZE = 100;
+const LOG_CHOP_SIZE = 1000;
 const logfile = __dirname + '/logger.log';
 
 const colors : {[name : string]: string} = {
@@ -25,14 +25,17 @@ var persistance: { fullRewrite:()=>void } = new (function () {
 	var lastPersistedLogEntry = 0;
 	fs.exists (logfile, exists => {
 		if (exists) {
+			var t1 = Date.now ();
 			fs.readFile (logfile, 'utf8', (err, data) => {
 				if (err) console.error (err);
+				var t2 = Date.now ();
 				var oldLog = log;
 				log = JSON.parse ('[' + data + ']');
 				lastPersistedLogEntry = log[log.length - 1].t;
 				oldLog.forEach (item => {
 					log.push (item);
 				});
+				logEntry ('logger', Date.now (), 'log deserialized; file read in ' + (t2 - t1) + 'ms, ' + log.length + ' lines parsed in ' + (Date.now () - t2) + 'ms', colors.yellow);
 			});
 		} else {
 			fs.writeFile (logfile, '{"n":"logger","t":' + Date.now () + ',"m":"logfile initialized","c":"#49f"}', 'utf8', err => {
@@ -48,14 +51,15 @@ var persistance: { fullRewrite:()=>void } = new (function () {
 		if (ind === log.length - 1) return;
 		lastPersistedLogEntry = log[log.length - 1].t;
 		var newLogEntries = log.slice (ind + 1);
+		if (newLogEntries.length === 1 && newLogEntries[0].n === 'logger') return;
 		var d = JSON.stringify (newLogEntries);
 		d = d.substr (1, d.length - 2);
 		d = ',\n' +  d.split ('"},{"').join ('"},\n{"');
 		fs.appendFile (logfile, d, 'utf8', err => {
 			if (err) console.error (err);
-			var mem = process.memoryUsage ();
-			var memUsage = Math.round (mem.heapUsed / mem.heapTotal * 1000) / 10;
-			console.log ('(log serialization took ' + (Date.now () - t1) + 'ms for ' + log.length + ' entries, ram=' + (Math.round (mem.heapUsed / 1024 / 1024 * 10) / 10) + 'mb)');
+			// var mem = process.memoryUsage ();
+			// var memUsage = Math.round (mem.heapUsed / mem.heapTotal * 1000) / 10;
+			// logEntry ('logger', Date.now (), 'log serialization took ' + (Date.now () - t1) + 'ms for ' + newLogEntries.length + ' entries, ram=' + (Math.round (mem.heapUsed / 1024 / 1024 * 10) / 10) + 'mb', 'white');
 		});
 	}, 5000);
 	this.fullRewrite = () => {
@@ -65,7 +69,9 @@ var persistance: { fullRewrite:()=>void } = new (function () {
 		d = d.split ('"},{"').join ('"},\n{"');
 		fs.writeFile (logfile, d, 'utf8', err => {
 			if (err) console.error (err);
-			console.log ('(log serialization took ' + (Date.now () - t1) + 'ms)');
+			var mem = process.memoryUsage ();
+			var memUsage = Math.round (mem.heapUsed / mem.heapTotal * 1000) / 10;
+			logEntry ('logger', Date.now (), 'log serialization took ' + (Date.now () - t1) + 'ms for ' + log.length + ' entries, ram=' + (Math.round (mem.heapUsed / 1024 / 1024 * 10) / 10) + 'mb', 'white');
 		});
 	};
 }) ();

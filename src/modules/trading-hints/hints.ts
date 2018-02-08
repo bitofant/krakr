@@ -145,8 +145,7 @@ mongo (db => {
 			var t1 = Date.now ();
 			getAggregatedData (props.buyAndSellPeriodInMinutes * 60, 120, (err, result) => {
 				if (err) throw err;
-				if (props.printBuySellStrategyHints) log (result.BCH.data.length + ' sets fetched in ' + (Date.now () - t1) + 'ms');
-				t1 = Date.now();
+				var t2 = Date.now ();
 				for (var k in result) { // for each currency "k"...
 					var dataset = result[k];
 					if (!(didBuy[k] || false)) {
@@ -185,7 +184,7 @@ mongo (db => {
 
 					}
 				}
-				if (props.printBuySellStrategyHints) log ('calculation took ' + (Date.now () - t1) + 'ms');
+				log ('mongoDB-aggregation took ' + (t2 - t1) + 'ms, financial calculations ' + (Date.now () - t2) + 'ms');
 			});
 		}, 500);
 	});

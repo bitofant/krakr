@@ -124,7 +124,7 @@
 								if (data[i].n !== hash) data.splice (i, 1);
 							}
 						} else {
-							var pattern = (hash.startsWith ('/') && hash.endsWith ('/')) ? new RegExp (hash.substr (1, hash.length - 2)) : new RegExp ('.+' + '.+');
+							var pattern = (hash.startsWith ('/') && hash.endsWith ('/')) ? new RegExp (hash.substr (1, hash.length - 2)) : new RegExp ('.+' + hash + '.+');
 							for (var i = data.length - 1; i >= 0; i--) {
 								if (pattern.exec (data[i].m) === null) data.splice (i, 1);
 							}

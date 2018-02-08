@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Log</title>
+		<style>
+			body {
+				background: #000;
+				color: #fff;
+				font-size: 14px;
+			}
+			#wrapper {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				height: 100%;
+				overflow: auto;
+			}
+			#headline {
+				position: fixed;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				height: 23px;
+				background: #06c;
+				color: #fff;
+				z-index: 9999;
+			}
+			.fadingrow {
+				opacity: 0;
+				transition: opacity .5s;
+				position: absolute;
+				width: 100%;
+				height: 1.5em;
+				left: 0px;
+				border-top: 1px solid #333;
+			}
+			.even-row {
+				background: #000;
+			}
+			.odd-row {
+				background: #222;
+			}
+			.col {
+				position: absolute;
+				display: inline-block;
+				font-family: monospace;
+				top: 1px;
+			}
+			.head-col {
+				position: absolute;
+				display: inline-block;
+				font-family: Helvetica, 'Segoe UI', Verdana, sans-serif;
+				top: 3px;
+				font-weight: bold;
+			}
+			.col-1 {
+				left: 5px;
+				width: 100px;
+			}
+			.col-2 {
+				left: 116px;
+				width: 105px;
+			}
+			.col-3 {
+				left: 245px;
+				width: 100px;
+			}
+			.col-4 {
+				left: 370px;
+				width: calc(100% - 380px);
+			}
+		</style>
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="headline">
+				<div style="position: relative">
+					<div class="head-col col-1">Date</div>
+					<div class="head-col col-2">Time</div>
+					<div class="head-col col-3">Logger</div>
+					<div class="head-col col-4">Message</div>
+				</div>
+			</div>
+			<div id="content"></div>
+		</div>
+		<script src="https://riuna.de/bit.js" crssorigin="anonymous"></script>
+		<script>
+			var basePath = location.href;
+			if (basePath.endsWith ('.html')) basePath = basePath.substr (0, basePath.length - 5);
+			if (!basePath.endsWith ('/')) basePath += '/';
+			function nDigits (n, digits) {
+				var sn = '' + n;
+				while (sn.length < digits) sn = '0' + sn;
+				return sn;
+			}
+			function twoDigits (n) {
+				return nDigits (n, 2);
+			}
+			var content = document.getElementById ('content');
+			var latest = 0;
+			var offsetTop = 5;
+			var numChildren = 0;
+			var rowCount = 1;
+			var allRows = [];
+			ajax.callbackArgs = [2, 4]; // (err, json)
+			function refresh () {
+				ajax.get (basePath + 'since/' + latest, (err, data) => {
+					// if (data.length > 100) data.splice (0, data.length - 100);
+					if (err) throw err;
+					if (data.length < 1) return;
+					var se = document.getElementById ('wrapper'); //document.body.parentElement;
+					var shouldStep = (se.scrollHeight - se.scrollTop - window.innerHeight === 0);
+					latest = data[data.length - 1].t;
+					var rows = [];
+					data.forEach (item => {
+						var d = new Date (item.t);
+						var date = d.getFullYear () + '-' + twoDigits (d.getMonth () + 1) + '-' + twoDigits (d.getDate ());
+						var time = twoDigits (d.getHours ()) + ':' + twoDigits (d.getMinutes ()) + ':' + twoDigits (d.getSeconds ()) + '<span style="opacity:.66">.' + nDigits (d.getMilliseconds (), 3) + '</span>';
+						var lineCount = item.m.split ('\n').length;
+						rows.push (elem ({
+							appendTo: content,
+							className: 'fadingrow ' + (((numChildren++)&1)===1?'odd-row':'even-row'),
+							style: {
+								color: item.c,
+								opacity: data.length > 50 ? 1 : 0,
+								height: 'calc(1.5em * ' + lineCount + ')',
+								top: 'calc(1.3em * ' + rowCount + ' + 0.3em + ' + (numChildren-1<<1) + 'px)' //(offsetTop += 20) + 'px'
+							},
+							children: [
+								elem ({
+									style: { position: 'relative' },
+									children: [
+										elem ({ className: 'col col-1', innerHTML: date }),
+										elem ({ className: 'col col-2', innerHTML: time }),
+										elem ({ className: 'col col-3', innerHTML: item.n }),
+										elem ({ className: 'col col-4', innerText: item.m })
+									]
+								})
+							]
+						}));
+						rowCount += lineCount;
+					});
+					if (shouldStep) {
+						if (se.scrollHeight - se.scrollTop - window.innerHeight > 1000) {
+							se.scrollTop = se.scrollHeight - window.innerHeight - 1000;
+						}
+						var scroll = se.scrollTop, step = 1;
+						function stepIt () {
+							if (scroll > se.scrollTop) {
+								console.log ('done;');
+								return;
+							} else if (scroll < se.scrollTop) {
+								scroll = se.scrollTop;
+							}
+							scroll += step | 0;
+							if (step < 20) step = step * 1.15;
+							se.scrollTop = scroll;
+							window.requestAnimationFrame (stepIt);
+						}
+						stepIt ();
+					}
+					//var = rows[rows.length - 1].offsetTop + 1000;
+					var visStep = 500 / (rows.length + 2) | 0;
+					rows.forEach ((row, i) => {
+						allRows.push ({
+							row: row,
+							top: row.offsetTop,
+							attached: true
+						});
+						setTimeout (() => {
+							row.style.opacity = 1;
+						}, (i+1) * visStep);
+					});
+				});
+			}
+			setInterval (refresh, 500);
+			wrapper.addEventListener ('scroll', ev => {
+				var t1 = Date.now ();
+				var screen = {
+					top: wrapper.scrollTop + 5,
+					bottom: wrapper.scrollTop + window.innerHeight
+				};
+				allRows.forEach ((item, i) => {
+					if (i === 0 || i === allRows.length - 1) return;
+					if (item.top < screen.top && !item.attached) return;
+					var vis = (item.top > screen.top && item.top < screen.bottom);
+					if (vis !== item.attached) {
+						item.attached = vis;
+						if (vis) {
+							content.appendChild (item.row);
+						} else {
+							content.removeChild (item.row);
+						}
+					}
+				});
+			}, false);
+		</script>
+	</body>
+</html>

@@ -172,6 +172,7 @@ function copy (file) {
 ensureDirExistsSync (DIST_FOLDER + 'htdocs');
 copy ('htdocs/index.html');
 copy ('htdocs/favicon.ico');
+copy ('htdocs/log.html');
 
 
 module.exports = [

@@ -8,7 +8,8 @@
 		"test/*",
 		"user-store/*",
 		"src/*",
-		"dist/log.txt"
+		"dist/log.txt",
+		"dist/modules/helper/logger.log"
 	],
 	"env": {
 		"NODE_ENV": "development"

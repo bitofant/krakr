@@ -1,6 +1,8 @@
+import fs = require ('fs');
 const props = require ('../../application-properties');
-const MAX_LOG_LENGTH = 1500;
+const MAX_LOG_LENGTH = 50000;
 const LOG_CHOP_SIZE = 100;
+const logfile = __dirname + '/logger.log';
 
 const colors : {[name : string]: string} = {
 	black:   '\x1b[30m',
@@ -19,6 +21,54 @@ var maxNameLength : number = 0;
 
 var log : Array<{ n:string, t:number, m:string, c:string }> = [];
 
+var persistance: { fullRewrite:()=>void } = new (function () {
+	var lastPersistedLogEntry = 0;
+	fs.exists (logfile, exists => {
+		if (exists) {
+			fs.readFile (logfile, 'utf8', (err, data) => {
+				if (err) console.error (err);
+				var oldLog = log;
+				log = JSON.parse ('[' + data + ']');
+				lastPersistedLogEntry = log[log.length - 1].t;
+				oldLog.forEach (item => {
+					log.push (item);
+				});
+			});
+		} else {
+			fs.writeFile (logfile, '{"n":"logger","t":' + Date.now () + ',"m":"logfile initialized","c":"#49f"}', 'utf8', err => {
+				if (err) console.error (err);
+			});
+		}
+	})
+	setInterval (() => {
+		var t1 = Date.now ();
+		var ind = log.length - 1;
+		while (log[ind].t > lastPersistedLogEntry) ind--;
+		if (ind === log.length - 1) return;
+		lastPersistedLogEntry = log[log.length - 1].t;
+		var newLogEntries = log.slice (ind + 1);
+		var d = JSON.stringify (newLogEntries);
+		d = d.substr (1, d.length - 2);
+		d = ',\n' +  d.split ('"},{"').join ('"},\n{"');
+		fs.appendFile (logfile, d, 'utf8', err => {
+			if (err) console.error (err);
+			var mem = process.memoryUsage ();
+			var memUsage = Math.round (mem.heapUsed / mem.heapTotal * 1000) / 10;
+			console.log ('(log serialization took ' + (Date.now () - t1) + 'ms for ' + log.length + ' entries, ram=' + (Math.round (mem.heapUsed / 1024 / 1024 * 10) / 10) + 'mb)');
+		});
+	}, 5000);
+	this.fullRewrite = () => {
+		var t1 = Date.now ();
+		var d = JSON.stringify (log);
+		d = d.substr (1, d.length - 2);
+		d = d.split ('"},{"').join ('"},\n{"');
+		fs.writeFile (logfile, d, 'utf8', err => {
+			if (err) console.error (err);
+			console.log ('(log serialization took ' + (Date.now () - t1) + 'ms)');
+		});
+	};
+}) ();
+
 function logEntry (name, timestamp, msg, color) {
 	var c = 'white';
 	for (var k in colors) {
@@ -35,6 +85,7 @@ function logEntry (name, timestamp, msg, color) {
 	});
 	if (log.length > MAX_LOG_LENGTH) {
 		log.splice (0, LOG_CHOP_SIZE);
+		persistance.fullRewrite ();
 	}
 }
 
@@ -82,134 +133,13 @@ function fixedLengthString (str, len, fillChar) {
 }
 
 
-const baseHTML = `<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" crossorigin="anonymous">
-		<title>Log</title>
-		<style>
-			body {
-				background: #000;
-				color: #fff;
-			}
-			.fadingrow {
-				opacity: 0;
-				transition: opacity .5s;
-			}
-			td {
-				font-family: monospace;
-				font-size: 120%;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container-fluid">
-			<h1>Log</h1>
-			<table class="table table-sm table-dark">
-				<thead>
-					<th>Date</th>
-					<th>Time</th>
-					<th>Logger</th>
-					<th>Message</th>
-				</thead>
-				<tbody id="content"></tbody>
-			</table>
-		</div>
-		<script src="https://code.jquery.com/jquery-3.2.1.min.js" crssorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" crssorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" crssorigin="anonymous"></script>
-		<script>
-			var basePath = location.href;
-			if (!basePath.endsWith ('/')) basePath += '/';
-			function nDigits (n, digits) {
-				var sn = '' + n;
-				while (sn.length < digits) sn = '0' + sn;
-				return sn;
-			}
-			function twoDigits (n) {
-				return nDigits (n, 2);
-			}
-			var content = $('#content');
-			var latest = 0;
-			var inStepping = false;
-			function refresh () {
-				$.ajax (basePath + 'since/' + latest, {
-					success: data => {
-						if (data.length < 1) return;
-						latest = data[data.length - 1].t;
-						var rows = [];
-						data.forEach (item => {
-							var row = document.createElement ('tr');
-							row.style.color = item.c;
-							var d = new Date (item.t);
-							var date = d.getFullYear () + '-' + twoDigits (d.getMonth () + 1) + '-' + twoDigits (d.getDate ());
-							var time = twoDigits (d.getHours ()) + ':' + twoDigits (d.getMinutes ()) + ':' + twoDigits (d.getSeconds ()) + '<span style="opacity:.66">.' + nDigits (d.getMilliseconds (), 3) + '</span>';
-							function appendTD (text, i) {
-								var td = document.createElement ('td');
-								if (i < 3) td.innerHTML = text;
-								else {
-									td.style.whiteSpace = 'pre';
-									td.innerText = text;
-								}
-								row.appendChild (td);
-							}
-							[
-								date,
-								time,
-								item.n,
-								item.m
-							].forEach (appendTD);
-							row.className = 'fadingrow';
-							content.append (row);
-							rows.push (row);
-						});
-						var se = document.body.parentElement
-						var scroll = se.scrollTop, step = (se.scrollHeight - se.scrollTop - window.innerHeight > 1000) ? 50 : 1;
-						function stepIt () {
-							if (scroll > se.scrollTop) {
-								console.log ('done;');
-								inStepping = false;
-								return;
-							} else if (scroll < se.scrollTop) {
-								scroll = se.scrollTop;
-							}
-							scroll += step | 0;
-							if (step < 20) step = step * 1.15;
-							se.scrollTop = scroll;
-							window.requestAnimationFrame (stepIt);
-						}
-						if (!inStepping) {
-							inStepping = true;
-							stepIt ();
-						}
-						//var = rows[rows.length - 1].offsetTop + 1000;
-						var visStep = 500 / (rows.length + 2) | 0;
-						rows.forEach ((row, i) => {
-							setTimeout (() => {
-								row.style.opacity = 1;
-							}, (i+1) * visStep);
-						});
-					}
-				});
-			}
-			setInterval (refresh, 500);
-		</script>
-	</body>
-</html>`;
 
 
-/**
- * 
- * @param {Request} req 
- * @param {*} res 
- * @param {*} next 
- */
-function express (req, res, next) {
-	// console.log (req.url);
+
+function express (req: Request, res, next) {
 	if (req.url === '/') {
-		res.send (baseHTML);
+		var path = __dirname.substr (0, __dirname.indexOf ('/dist') + 5);
+		res.sendFile (path + '/htdocs/log.html');
 	} else if (req.url.startsWith ('/since/')) {
 		var t1 = parseInt (req.url.substr ('/since/'.length));
 		for (var i = 0; i < log.length; i++) {

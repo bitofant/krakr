@@ -4,6 +4,7 @@ import assets from '../assets';
 import { singleton as kraken } from '../kraken';
 
 import logger from '../helper/logger';
+import { hints } from '../trading-hints/hints';
 const log = logger(module);
 
 /**
@@ -25,7 +26,8 @@ class UserSession {
 				balance: user.balance,
 				moneySpent: user.getMoneySpent (),
 				avgBuyPrice: user.getAvgBuyPrice (),
-				totalDeposit: user.getMoneyDeposited ()
+				totalDeposit: user.getMoneyDeposited (),
+				hints: hints
 			});
 			setTimeout (sendTradableAssetValues, 500);
 		});

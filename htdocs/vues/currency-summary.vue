@@ -6,6 +6,20 @@
 		text-align: right;
 		font-family: monospace;
 	}
+	a.stratlink {
+		display: inline-block;
+		color: #000;
+		padding-left: .4em;
+		padding-right: .4em;
+		border-left: 1px solid rgba(0,0,0,.7);
+		border-right: 1px solid rgba(0,0,0,.7);
+		background: rgba(0,0,0,.1);
+		border-radius: .6em;
+		text-decoration: none;
+	}
+	a.stratlink:hover {
+		text-decoration: none;
+	}
 </style>
 
 <template>
@@ -20,8 +34,8 @@
 				<th class="number">Value</th>
 				<th class="number" colspan="2" style="text-align:center">Gain</th>
 				<th class="number">Total Gain</th>
-				<th class="number">24h Volume</th>
-				<th class="number">24h Stoch.</th>
+				<th class="number">24h</th>
+				<th class="number">#</th>
 			</thead>
 			<tbody>
 				<tr v-for="v in sortedList" :key="v.cid" v-if="typeof (v) !== 'number'">
@@ -63,10 +77,17 @@
 						<td v-else></td>
 
 					<!-- 24h statistics -->
-					<td class="number"
-							v-html="niceNumber (v.last24h.volume * v.last24h.avg, 0) + '€'"></td>
+					<!-- <td class="number"
+							v-html="niceNumber (v.last24h.volume * v.last24h.avg, 0) + '€'"></td> -->
 					<td class="number" style="color:#080"
 							v-html="stochastic (v.last24h.stoch)"></td>
+
+					<td class="number" style="color:#080">
+						<a href="#" class="stratlink"
+							 :title="v.hint.substr(2)"
+							 @click="openModal(v)"
+							 v-text="v.hint.substr(0,1)"></a>
+					</td>
 				</tr>
 				<tr>
 					<td>Euro</td>
@@ -82,10 +103,27 @@
 				</tr>
 			</tbody>
 		</table>
+		<div v-if="modal" class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel" v-text="modal.currency.name + ' ' + modal.hint.substr (0, 1)"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body" v-text="modal.hint.substr (2)"></div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script>
+import $ from 'jquery';
 import sock from '../sock';
 import assets from '../js/assets';
 import user from '../js/user';
@@ -93,7 +131,8 @@ import user from '../js/user';
 var data = {
 	lastUpdateDelta: 0,
 	user: user,
-	sortedList: []
+	sortedList: [],
+	modal: null
 };
 
 export default {
@@ -147,6 +186,12 @@ export default {
 				if (s[0].charAt (0) !== '-' || s[0].length > 2) s[1] = '<span style="opacity:.5">' + s[1] + '</span>';
 			}
 			return s.join ('.');
+		},
+		openModal (item) {
+			data.modal = item;
+			setTimeout (() => {
+				$ ('#exampleModal').modal ()
+			}, 50);
 		}
 	},
 	watch: {

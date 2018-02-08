@@ -136,3 +136,11 @@ mongo (db => {
 		});
 	});
 });
+
+var cachedHints = '';
+bus.on ('hints', hints => {
+	var hc = JSON.stringify (hints);
+	if (hc === cachedHints) return;
+	cachedHints = hc;
+	io.emit ('hints', hints);
+});

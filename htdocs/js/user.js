@@ -30,7 +30,8 @@ const user = {
 				high: 0,
 				volume: 0,
 				stoch: .59
-			}
+			},
+			hint: '0|dunno what to do with this!'
 		}
 	},
 	lastUpdate: Date.now () - 10000,
@@ -68,9 +69,16 @@ sock.on ('balance', balance => {
 			asset.owned = balance.balance[k] || 0;
 			asset.avgBuyPrice = balance.avgBuyPrice[k] || 0;
 			asset.moneySpent = balance.moneySpent[k] || 0;
+			asset.hint = balance.hints[k] || '?';
 		}
 	}
 	updateTotalAssetValue ();
+});
+
+sock.on ('hints', hints => {
+	for (var k in hints) {
+		if (user.assets[k]) user.assets[k].hint = hints[k];
+	}
 });
 
 

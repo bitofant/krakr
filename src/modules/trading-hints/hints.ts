@@ -36,6 +36,9 @@ var didBuy: { [currency: string]: number } = {
 	// XXRP: .6
 };
 
+const hints: {[currency:string]:string} = {
+};
+
 
 
 
@@ -169,12 +172,12 @@ mongo (db => {
 							if (reason !== null) reason = i + '|' + k + (k.length < 4 ? ' ' : '') + ' is not a buy: ' + reason;
 						});
 						if (reason === null) {
-							log ('+|' + k + (k.length < 4 ? ' ' : '') + ' is a buy!!!!!!!!!! (' + values[k].last + '€)', 'red');
+							reason = '+|' + k + (k.length < 4 ? ' ' : '') + ' is a buy!!!!!!!!!! (' + values[k].last + '€)', 'red';
 							didBuy[k] = values[k].last;
 							bus.emit ('buy', k);
-						} else {
-							log (reason);
 						}
+						log (reason);
+						hints[k] = reason;
 
 					} else {
 
@@ -186,16 +189,17 @@ mongo (db => {
 							if (reason !== null) reason = '*|' + k + (k.length < 4 ? ' ' : '') + ' hodl (' + values[k].last + '€): ' + reason;
 						});
 						if (reason === null) {
-							log ('-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + values[k].last + '€)', 'red');
+							reason = '-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + values[k].last + '€)', 'red';
 							didBuy[k] = 0;
 							bus.emit ('sell', k);
-						} else {
-							log (reason);
 						}
+						log (reason);
+						hints[k] = reason;
 
 					}
 				}
 				log ('mongoDB-aggregation took ' + (t2 - t1) + 'ms, financial calculations ' + (Date.now () - t2) + 'ms');
+				bus.emit ('hints', hints)
 			});
 		}, 500);
 	});
@@ -217,8 +221,5 @@ mongo (db => {
 						// 	if (props.printBuySellStrategyHints) log ('*|' + k + (k.length < 4 ? ' ' : '') + ' hodl! (' + values[k].last + '€)');
 						// }
 
-const hints = {
-	a: 'b'
-};
-
+export { hints };
 export default hints;

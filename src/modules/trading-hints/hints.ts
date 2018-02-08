@@ -70,7 +70,7 @@ const buyStrategy : Array<{
 		// slow MACD trigger crossed signal
 		objectionToBuy (currency, dataset) {
 			var value = fn.macd.slow (dataset).hist.getClose ();
-			if (value >= 0) return null;
+			if (value >= 0.01) return null;
 			return 'slow MACD is on a decline (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint + 1) + ')';
 		}
 	},
@@ -111,7 +111,7 @@ const sellStrategy : Array<{
 		// slow MACD went negative
 		objectionToSell (currency, dataset) {
 			var value = fn.macd.slow (dataset).hist.getClose ();
-			if (value < 0) return null;
+			if (value < -0.01) return null;
 			return 'slow MACD still looks promising (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint) + ')';
 		}
 	}

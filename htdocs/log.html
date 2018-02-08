@@ -92,6 +92,7 @@
 		<script src="https://riuna.de/bit.js" crssorigin="anonymous"></script>
 		<script>
 			var basePath = location.href;
+			if (basePath.indexOf ('#') > 0) basePath = basePath.substr (0, basePath.indexOf ('#'));
 			if (basePath.endsWith ('.html')) basePath = basePath.substr (0, basePath.length - 5);
 			if (!basePath.endsWith ('/')) basePath += '/';
 			function nDigits (n, digits) {
@@ -114,6 +115,23 @@
 					// if (data.length > 100) data.splice (0, data.length - 100);
 					if (err) throw err;
 					if (data.length < 1) return;
+
+					var hash = (document.location.hash || '').substr (1);
+					if (hash) {
+						if (hash.startsWith ('logger=')) {
+							hash = hash.substr ('logger='.length);
+							for (var i = data.length - 1; i >= 0; i--) {
+								if (data[i].n !== hash) data.splice (i, 1);
+							}
+						} else {
+							var pattern = (hash.startsWith ('/') && hash.endsWith ('/')) ? new RegExp (hash.substr (1, hash.length - 2)) : new RegExp ('.+' + '.+');
+							for (var i = data.length - 1; i >= 0; i--) {
+								if (pattern.exec (data[i].m) === null) data.splice (i, 1);
+							}
+						}
+						if (data.length < 1) return;
+					}
+
 					var se = document.getElementById ('wrapper'); //document.body.parentElement;
 					var shouldStep = (se.scrollHeight - se.scrollTop - window.innerHeight === 0);
 					latest = data[data.length - 1].t;
@@ -153,7 +171,6 @@
 						var scroll = se.scrollTop, step = 1;
 						function stepIt () {
 							if (scroll > se.scrollTop) {
-								console.log ('done;');
 								return;
 							} else if (scroll < se.scrollTop) {
 								scroll = se.scrollTop;
@@ -181,8 +198,8 @@
 				});
 			}
 			setInterval (refresh, 500);
+
 			wrapper.addEventListener ('scroll', ev => {
-				var t1 = Date.now ();
 				var screen = {
 					top: wrapper.scrollTop + 5,
 					bottom: wrapper.scrollTop + window.innerHeight
@@ -201,6 +218,16 @@
 					}
 				});
 			}, false);
+
+			window.addEventListener ('hashchange', ev => {
+				latest = 0;
+				offsetTop = 5;
+				numChildren = 0;
+				rowCount = 1;
+				allRows = [];
+				content.innerHTML = '';
+			}, false);
+
 		</script>
 	</body>
 </html>

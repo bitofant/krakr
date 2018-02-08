@@ -41,6 +41,7 @@ var persistance: { fullRewrite:()=>void } = new (function () {
 		}
 	})
 	setInterval (() => {
+		if (log.length === 0) return;
 		var t1 = Date.now ();
 		var ind = log.length - 1;
 		while (log[ind].t > lastPersistedLogEntry) ind--;

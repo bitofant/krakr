@@ -166,40 +166,6 @@ function getAggregatedData (secondsPerBracket : number, bracketCount : number, c
 			});
 			cleanupAndCallback (data, callback);
 		});
-
-		/*
-		for (var i = 0; i < bracketCount; i++) {
-			(function (i) {
-				ticker.aggregate ([{
-					$match: {
-						timestamp: {
-							$gt:  Long.fromNumber (startT +  i      * msPerBracket),
-							$lte: Long.fromNumber (startT + (i + 1) * msPerBracket)
-						}
-					}
-				}, {
-					$group: Object.assign ({
-						_id: Long.fromNumber (startT + (i+1) * msPerBracket)
-					}, groupedAssetAverage)
-				}]).toArray ((err, result) => {
-					if (err) callback (err, null);
-					if (result.length > 0) {
-						var assets = {};
-						for (var k in result[0]) {
-							if (k !== '_id') assets[k] = result[0][k];
-						}
-						brackets[i] = {
-							timestamp: result[0]._id,
-							assets: assets
-						};
-					} else {
-						//throw Error ('no data for bracket D:');
-					}
-					if (--remaining <= 0) cleanupAndCallback (brackets, callback);
-				});
-			}) (i);
-		}
-		*/
 	});
 }
 

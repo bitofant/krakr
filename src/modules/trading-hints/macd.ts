@@ -4,8 +4,14 @@ const log = logger (module);
 
 
 
+declare interface MACDReturnType {
+	macd: Dataset,
+	signal: Dataset,
+	hist: Dataset,
+	toString: () => string
+}
 
-function macd (dataset: Dataset, fastLength: number, slowLength: number, smooth: number): { macd: Dataset, signal: Dataset, hist: Dataset, toString: ()=>string } {
+function macd (dataset: Dataset, fastLength: number, slowLength: number, smooth: number): MACDReturnType {
 	var macdLine = Dataset.subtract (
 		dataset.EMA (fastLength),
 		dataset.EMA (slowLength)
@@ -63,5 +69,5 @@ function macd (dataset: Dataset, fastLength: number, slowLength: number, smooth:
 // 	};
 // }
 
-
+export { macd, MACDReturnType };
 export default macd;

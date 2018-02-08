@@ -7,47 +7,116 @@ import { mongo, Long } from '../helper/mongo';
 import { getAggregatedData, unfoldData } from './aggregated-data';
 import stochastic, { fullStochastic } from './stochastic';
 import macd from './macd';
-import { Data, Dataset } from './dataset';
+import dataset, { Data, Dataset } from './dataset';
 import props from '../../application-properties';
 import fs = require ('fs');
+import { CachedMACD, CachedStochastic } from './cached-function';
 
-// fs.writeFile (__dirname + '/../../log.txt', '', 'utf8', err => {
-// 	if (err) console.log (err);
-// });
-// var append: Array<string> = [];
-// function log (msg, color?:string) {
-// 	if (color) {
-// 		clog (msg, color);
-// 	} else {
-// 		clog (msg);
-// 	}
-// 	append.push (msg);
-// }
-// function checkAppend () {
-// 	if (append.length === 0) {
-// 		setTimeout (checkAppend, 500);
-// 		return;
-// 	}
-// 	fs.appendFile (__dirname + '/../../log.txt', append.join ('\n') + '\n', 'utf8', err => {
-// 		setTimeout (checkAppend, 500);
-// 		if (err) console.log (err);
-// 	});
-// 	append = [];
-// }
-// setTimeout (checkAppend, 1000);
 
-var fn = {
+const fn = {
 	macd: {
-		fast: dataset => macd (dataset,  4, 16, 9),
-		mid:  dataset => macd (dataset,  6, 19, 9),
-		slow: dataset => macd (dataset, 12, 26, 9)
+		fast: CachedMACD ( 4, 16, 9),
+		mid:  CachedMACD ( 6, 19, 9),
+		slow: CachedMACD (12, 26, 9),
 	},
 	stochastic: {
-		fast: dataset => fullStochastic (dataset, 14 ,4, 4),
-		mid:  dataset => fullStochastic (dataset, 31 ,4, 4),
-		slow: dataset => fullStochastic (dataset, 75 ,4, 4)
+		fast: CachedStochastic (14 ,4, 4),
+		mid:  CachedStochastic (31 ,4, 4),
+		slow: CachedStochastic (75 ,4, 4)
 	}
 };
+
+
+
+
+const buyStrategy : Array<{
+	objectionToBuy: (currency: string, dataset: Dataset) => string
+}> = [
+	{
+		// mid stochastic < 50%
+		objectionToBuy (currency, dataset) {
+			var midStoch = fn.stochastic.mid (dataset).d;
+			if (midStoch.getClose () < .5) return null;
+			var pct = Math.round (midStoch.getClose () * 100);
+			return 'mid stochastic suggests it\'s strongly overbought (' + pct + '%)';
+		}
+	},
+	{
+		// fast MACD trigger crossed signal
+		objectionToBuy (currency, dataset) {
+			var value = fn.macd.fast (dataset).hist.getClose ();
+			if (value >= 0) return null;
+			return 'fast MACD is on a decline (' + value.toString ().substr (0, 5) + ')';
+		}
+	},
+	{
+		// mid MACD trigger crossed signal
+		objectionToBuy (currency, dataset) {
+			var value = fn.macd.mid (dataset).hist.getClose ();
+			if (value >= 0) return null;
+			return 'mid MACD is on a decline (' + value.toString ().substr (0, 5) + ')';
+		}
+	},
+	{
+		// mid MACD-Line positive
+		objectionToBuy (currency, dataset) {
+			if (props.requireMACDtoBePositive === false) return null;
+			var value = fn.macd.mid (dataset).macd.getClose ();
+			if (value >= 0) return null;
+			return 'mid MACD-Line should be above 0 (is at ' + value.toString ().substr (0, 5) + ')';
+		}
+	},
+	{
+		// slow MACD trigger crossed signal
+		objectionToBuy (currency, dataset) {
+			var value = fn.macd.slow (dataset).hist.getClose ();
+			if (value >= 0) return null;
+			return 'slow MACD is on a decline (' + value.toString ().substr (0, 5) + ')';
+		}
+	},
+	{
+		// mid stochastic comes from below 30%
+		objectionToBuy (currency, dataset) {
+			var wasBelow20pct = false;
+			var midStoch = fn.stochastic.mid (dataset).d;
+			for (var i = 0; i < props.checkLastXStochasticBrackets; i++) {
+				if (midStoch.data[midStoch.data.length - 1 - i].low < .3) {
+					wasBelow20pct = true;
+					break;
+				}
+			}
+			if (wasBelow20pct) return null;
+			var pct = Math.round (midStoch.getClose () * 100);
+			return 'mid stochastic seems slightly overbought (' + pct + '%)';
+		}
+	},
+];
+
+
+
+
+const sellStrategy : Array<{
+	objectionToSell: (currency: string, dataset: Dataset) => string
+}> = [
+	{
+		// mid stochastic dropped below 80%
+		objectionToSell (currency, dataset) {
+			var value = fn.stochastic.mid (dataset).d.getClose ();
+			if (value < .8) return null;
+			var pct = Math.round (value * 100);
+			return 'mid stochastic still looks good (' + pct + '%)';
+		}
+	}, 
+	{
+		// slow MACD went negative
+		objectionToSell (currency, dataset) {
+			var value = fn.macd.slow (dataset).hist.getClose ();
+			if (value < 0) return null;
+			return 'slow MACD still looks promising (' + value.toString ().substr (0, 5) + ')';
+		}
+	}
+];
+
 
 
 var didBuy: { [currency:string]: boolean } = {
@@ -77,77 +146,66 @@ mongo (db => {
 			getAggregatedData (props.buyAndSellPeriodInMinutes * 60, 120, (err, result) => {
 				if (err) throw err;
 				if (props.printBuySellStrategyHints) log (result.BCH.data.length + ' sets fetched in ' + (Date.now () - t1) + 'ms');
-				// if (props.printBuySellStrategyHints) log ('value<BCH>: ' + result.BCH.getClose ());
 				t1 = Date.now();
-				// log ('ema<BCH>: ' + result.BCH.EMA (10).getClose ());
-				// log ('macd<BCH>: ' + macd (result.BCH, 6, 19, 9));
-				// log ('stoch<BCH>: ' + fullStochastic (result.BCH, 75, 4, 4));
-				for (var k in result) {
+				for (var k in result) { // for each currency "k"...
 					var dataset = result[k];
-					var midStoch = fn.stochastic.mid (dataset).d;
-					var isbought: boolean = didBuy[k] || false;
-					if (!isbought) {
-						if (midStoch.getClose () < .5) {
-								if (fn.macd.fast (dataset).hist.getClose () > 0) {
-								var midMACD = fn.macd.mid (dataset);
-								if (props.requireMACDtoBePositive === false || midMACD.hist.getClose () > 0) {
-									if (fn.macd.slow (dataset).hist.getClose () > 0) {
-										var wasBelow20pct = false;
-										for (var i = 0; i < props.checkLastXStochasticBrackets; i++) {
-											if (midStoch.data[midStoch.data.length - 1 - i].low < .3) {
-												wasBelow20pct = true;
-												break;
-											}
-										}
-										if (wasBelow20pct) {
-											if (props.printBuySellStrategyHints) log ('+|' + k + (k.length < 4 ? ' ' : '') + ' is a buy!!!!!!!!!!', 'red');
-											didBuy[k] = true;
-											bus.emit ('buy', k);
-											continue;
-										} else {
-											if (props.printBuySellStrategyHints) log ('4|' + k + (k.length < 4 ? ' ' : '') + ' is not a buy; mid stochastic seems overbought');
-										}
-									} else {
-										if (props.printBuySellStrategyHints) log ('3|' + k + (k.length < 4 ? ' ' : '') + ' is not a buy; slow MACD on decline');
-									}
-								} else {
-									if (props.printBuySellStrategyHints) log ('2|' + k + (k.length < 4 ? ' ' : '') + ' is not a buy; mid MACD on decline');
-								}
-							} else {
-								if (props.printBuySellStrategyHints) log ('1|' + k + (k.length < 4 ? ' ' : '') + ' is not a buy; fast MACD on decline');
-							}
+					if (!(didBuy[k] || false)) {
+
+						// I don't yet own this currency. should I buy?
+						let reason: string = null;
+						buyStrategy.forEach ((strategy, i) => {
+							if (reason !== null) return;
+							reason = strategy.objectionToBuy (k, dataset);
+							if (reason !== null) reason = i + '|' + k + (k.length < 4 ? ' ' : '') + ' is not a buy: ' + reason;
+						});
+						if (reason === null) {
+							log ('+|' + k + (k.length < 4 ? ' ' : '') + ' is a buy!!!!!!!!!! (' + values[k].last + '€)', 'red');
+							didBuy[k] = true;
+							bus.emit ('buy', k);
 						} else {
-							if (props.printBuySellStrategyHints) log ('0|' + k + (k.length < 4 ? ' ' : '') + ' is not a buy; mid stochastic suggests it\'s strongly overbought (' + Math.round (midStoch.getClose () * 100) + '%)');
+							log (reason);
 						}
+
 					} else {
-						var sum = (
-							(fn.macd.fast (dataset).hist.getClose () < 0 ? 2 : 0) +
-							(fn.macd.mid  (dataset).hist.getClose () < 0 ? 2 : 0) +
-							(fn.macd.slow (dataset).hist.getClose () < 0 ? 4 : 0) +
-							(fn.stochastic.mid (dataset).d.getClose () > .75 ? 1 : 0)
-						);
-						if (sum > 4) {
-							if (props.printBuySellStrategyHints) log ('-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!!', 'red');
+
+						// I do own this currency. should I sell?
+						let reason: string = null;
+						sellStrategy.forEach ((strategy, i) => {
+							if (reason !== null) return;
+							reason = strategy.objectionToSell (k, dataset);
+							if (reason !== null) reason = '*|' + k + (k.length < 4 ? ' ' : '') + ' hodl (' + values[k].last + '€): ' + reason;
+						});
+						if (reason === null) {
+							log ('-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + values[k].last + '€)', 'red');
 							didBuy[k] = false;
 							bus.emit ('sell', k);
 						} else {
-							if (props.printBuySellStrategyHints) log ('*|' + k + (k.length < 4 ? ' ' : '') + ' hodl!');
+							log (reason);
 						}
+
 					}
 				}
 				if (props.printBuySellStrategyHints) log ('calculation took ' + (Date.now () - t1) + 'ms');
-				// log ('value<BCH>: ' + data[data.length - 1]);
-				// log ('ema<BCH>: ' + ema (data, 13));
-				// log ('Stochastic<BCH>: ' + Math.round (stochastic.plain (data) * 100) + '%');
-				// log ('Stochastic.smooth<BCH>: ' + Math.round (stochastic.smooth (data, 14, 4) * 100) + '%');
-				// log ('macd<BCH>: ' + JSON.stringify (macd (data, 4, 16, 9)));
-				// var inp : MAInput = new MAInput (13, data);
-				//console.log (ti.macd);
 			});
 		}, 500);
 	});
 });
 
+
+
+						// var sum = (
+						// 	(fn.macd.fast (dataset).hist.getClose () < 0 ? 2 : 0) +
+						// 	(fn.macd.mid  (dataset).hist.getClose () < 0 ? 2 : 0) +
+						// 	(fn.macd.slow (dataset).hist.getClose () < 0 ? 4 : 0) +
+						// 	(fn.stochastic.mid (dataset).d.getClose () > .75 ? 1 : 0)
+						// );
+						// if (sum > 4) {
+						// 	if (props.printBuySellStrategyHints) log ('-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + values[k].last + '€)', 'red');
+						// 	didBuy[k] = false;
+						// 	bus.emit ('sell', k);
+						// } else {
+						// 	if (props.printBuySellStrategyHints) log ('*|' + k + (k.length < 4 ? ' ' : '') + ' hodl! (' + values[k].last + '€)');
+						// }
 
 const hints = {
 	a: 'b'

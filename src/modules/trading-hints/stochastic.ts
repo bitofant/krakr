@@ -39,7 +39,13 @@ function stochastic (dataset: Dataset, period: number): Dataset {
 	return ret;
 }
 
-function fullStochastic (dataset: Dataset, period: number, periodK: number, periodD: number): { k: Dataset, d: Dataset, toString: ()=>string } {
+declare interface FullStochasticReturnType {
+	k: Dataset,
+	d: Dataset,
+	toString: () => string
+}
+
+function fullStochastic (dataset: Dataset, period: number, periodK: number, periodD: number): FullStochasticReturnType {
 	var fastK = stochastic (dataset, period);
 	var fullK = fastK.EMA (periodK);
 	var fullD = fullK.EMA (periodD);
@@ -59,5 +65,5 @@ const stochastics = {
 	full: fullStochastic
 };
 
-export { stochastics, stochastic, fullStochastic };
+export { stochastics, stochastic, fullStochastic, FullStochasticReturnType };
 export default stochastics;

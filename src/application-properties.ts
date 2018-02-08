@@ -22,10 +22,12 @@ export default {
 	krakenDisabled: false,
 	krakenHistoryWrites: IS_PROD,
 	tickerRefreshInterval: 20 * 1000,
-	checkLastXStochasticBrackets: 5,
-	buyAndSellPeriodInMinutes: 5,
-	requireMACDtoBePositive: false,
-	printBuySellStrategyHints: true,
+	hints: {
+		checkLastXStochasticBrackets: 5,
+		buyAndSellPeriodInMinutes: 5,
+		requireMACDtoBePositive: false,
+		numberOfMacdDigitsToPrint: 6
+	},
 	makeBuyAndSellPricesUnrealistic: true,
 	disableEMails: IS_DEV
 };

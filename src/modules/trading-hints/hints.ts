@@ -46,7 +46,7 @@ const buyStrategy : Array<{
 		objectionToBuy (currency, dataset) {
 			var value = fn.macd.fast (dataset).hist.getClose ();
 			if (value >= 0) return null;
-			return 'fast MACD is on a decline (' + value.toString ().substr (0, 5) + ')';
+			return 'fast MACD is on a decline (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint + 1) + ')';
 		}
 	},
 	{
@@ -54,16 +54,16 @@ const buyStrategy : Array<{
 		objectionToBuy (currency, dataset) {
 			var value = fn.macd.mid (dataset).hist.getClose ();
 			if (value >= 0) return null;
-			return 'mid MACD is on a decline (' + value.toString ().substr (0, 5) + ')';
+			return 'mid MACD is on a decline (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint + 1) + ')';
 		}
 	},
 	{
 		// mid MACD-Line positive
 		objectionToBuy (currency, dataset) {
-			if (props.requireMACDtoBePositive === false) return null;
+			if (props.hints.requireMACDtoBePositive === false) return null;
 			var value = fn.macd.mid (dataset).macd.getClose ();
 			if (value >= 0) return null;
-			return 'mid MACD-Line should be above 0 (is at ' + value.toString ().substr (0, 5) + ')';
+			return 'mid MACD-Line should be above 0 (is at ' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint + 1) + ')';
 		}
 	},
 	{
@@ -71,7 +71,7 @@ const buyStrategy : Array<{
 		objectionToBuy (currency, dataset) {
 			var value = fn.macd.slow (dataset).hist.getClose ();
 			if (value >= 0) return null;
-			return 'slow MACD is on a decline (' + value.toString ().substr (0, 5) + ')';
+			return 'slow MACD is on a decline (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint + 1) + ')';
 		}
 	},
 	{
@@ -79,7 +79,7 @@ const buyStrategy : Array<{
 		objectionToBuy (currency, dataset) {
 			var wasBelow20pct = false;
 			var midStoch = fn.stochastic.mid (dataset).d;
-			for (var i = 0; i < props.checkLastXStochasticBrackets; i++) {
+			for (var i = 0; i < props.hints.checkLastXStochasticBrackets; i++) {
 				if (midStoch.data[midStoch.data.length - 1 - i].low < .3) {
 					wasBelow20pct = true;
 					break;
@@ -112,7 +112,7 @@ const sellStrategy : Array<{
 		objectionToSell (currency, dataset) {
 			var value = fn.macd.slow (dataset).hist.getClose ();
 			if (value < 0) return null;
-			return 'slow MACD still looks promising (' + value.toString ().substr (0, 5) + ')';
+			return 'slow MACD still looks promising (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint) + ')';
 		}
 	}
 ];
@@ -143,7 +143,7 @@ mongo (db => {
 	bus.on ('values_of_tradable_assets', (values : {[currency: string]: Asset}) => {
 		setTimeout (() => {
 			var t1 = Date.now ();
-			getAggregatedData (props.buyAndSellPeriodInMinutes * 60, 120, (err, result) => {
+			getAggregatedData (props.hints.buyAndSellPeriodInMinutes * 60, 120, (err, result) => {
 				if (err) throw err;
 				var t2 = Date.now ();
 				for (var k in result) { // for each currency "k"...

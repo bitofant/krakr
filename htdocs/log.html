@@ -104,7 +104,8 @@
 				return nDigits (n, 2);
 			}
 			var content = document.getElementById ('content');
-			var se = document.getElementById('wrapper'); //document.body.parentElement;
+			var wrapper = document.getElementById('wrapper'); //document.body.parentElement;
+			var se = wrapper;
 			var latest = Date.now () - 10 * 60 * 1000;
 			var offsetTop = 5;
 			var numChildren = 0;
@@ -147,6 +148,7 @@
 							style: {
 								color: item.c,
 								opacity: data.length > 50 ? 1 : 0,
+								zIndex: numChildren + 2,
 								height: 'calc(1.5em * ' + lineCount + ')',
 								top: 'calc(1.3em * ' + rowCount + ' + 0.3em + ' + (numChildren-1<<1) + 'px)' //(offsetTop += 20) + 'px'
 							},

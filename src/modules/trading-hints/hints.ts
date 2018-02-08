@@ -26,15 +26,25 @@ const fn = {
 	}
 };
 
+var didBuy: { [currency: string]: number } = {
+	// BCH: 993,
+	// XETH: 644,
+	// DASH: 455,
+	// XREP: 41,
+	// XXBT: 6640,
+	// XXMR: 193,
+	// XXRP: .6
+};
+
 
 
 
 const buyStrategy : Array<{
-	objectionToBuy: (currency: string, dataset: Dataset) => string
+	objectionToBuy: (currency: string, dataset: Dataset, values: { [currency: string]: Asset }) => string
 }> = [
 	{
 		// mid stochastic < 50%
-		objectionToBuy (currency, dataset) {
+		objectionToBuy (currency, dataset, values) {
 			var midStoch = fn.stochastic.mid (dataset).d;
 			if (midStoch.getClose () < .5) return null;
 			var pct = Math.round (midStoch.getClose () * 100);
@@ -43,7 +53,7 @@ const buyStrategy : Array<{
 	},
 	{
 		// fast MACD trigger crossed signal
-		objectionToBuy (currency, dataset) {
+		objectionToBuy (currency, dataset, values) {
 			var value = fn.macd.fast (dataset).hist.getClose ();
 			if (value >= 0) return null;
 			return 'fast MACD is on a decline (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint + 1) + ')';
@@ -51,7 +61,7 @@ const buyStrategy : Array<{
 	},
 	{
 		// mid MACD trigger crossed signal
-		objectionToBuy (currency, dataset) {
+		objectionToBuy (currency, dataset, values) {
 			var value = fn.macd.mid (dataset).hist.getClose ();
 			if (value >= 0) return null;
 			return 'mid MACD is on a decline (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint + 1) + ')';
@@ -59,7 +69,7 @@ const buyStrategy : Array<{
 	},
 	{
 		// mid MACD-Line positive
-		objectionToBuy (currency, dataset) {
+		objectionToBuy (currency, dataset, values) {
 			if (props.hints.requireMACDtoBePositive === false) return null;
 			var value = fn.macd.mid (dataset).macd.getClose ();
 			if (value >= 0) return null;
@@ -68,7 +78,7 @@ const buyStrategy : Array<{
 	},
 	{
 		// slow MACD trigger crossed signal
-		objectionToBuy (currency, dataset) {
+		objectionToBuy (currency, dataset, values) {
 			var value = fn.macd.slow (dataset).hist.getClose ();
 			if (value >= 0.01) return null;
 			return 'slow MACD is on a decline (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint + 1) + ')';
@@ -76,7 +86,7 @@ const buyStrategy : Array<{
 	},
 	{
 		// mid stochastic comes from below 30%
-		objectionToBuy (currency, dataset) {
+		objectionToBuy (currency, dataset, values) {
 			var wasBelow20pct = false;
 			var midStoch = fn.stochastic.mid (dataset).d;
 			for (var i = 0; i < props.hints.checkLastXStochasticBrackets; i++) {
@@ -96,11 +106,11 @@ const buyStrategy : Array<{
 
 
 const sellStrategy : Array<{
-	objectionToSell: (currency: string, dataset: Dataset) => string
+	objectionToSell: (currency: string, dataset: Dataset, values: { [currency: string]: Asset }) => string
 }> = [
 	{
 		// mid stochastic dropped below 80%
-		objectionToSell (currency, dataset) {
+		objectionToSell (currency, dataset, values) {
 			var value = fn.stochastic.mid (dataset).d.getClose ();
 			if (value < .8) return null;
 			var pct = Math.round (value * 100);
@@ -109,25 +119,26 @@ const sellStrategy : Array<{
 	}, 
 	{
 		// slow MACD went negative
-		objectionToSell (currency, dataset) {
+		objectionToSell (currency, dataset, values) {
 			var value = fn.macd.slow (dataset).hist.getClose ();
 			if (value < -0.01) return null;
 			return 'slow MACD still looks promising (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint) + ')';
+		}
+	},
+	{
+		// make sure we're profitable
+		objectionToSell (currency, dataset, values) {
+			var buyPrice = didBuy[currency] || 0;
+			var currentPrice = values[currency].last;
+			var profitFactor = 1.015;
+			if (currentPrice >= buyPrice * profitFactor) return null;
+			return 'we\'re negative - HODL hrad until ' + (buyPrice * profitFactor) + '€';
 		}
 	}
 ];
 
 
 
-var didBuy: { [currency:string]: boolean } = {
-	// BCH: true,
-	// XETH: true,
-	// DASH: true,
-	// XREP: true,
-	// XXBT: true,
-	// XXMR: true,
-	// XXRP: true
-};
 
 // setTimeout (() => {
 // 	didBuy.BCH = true;
@@ -148,18 +159,18 @@ mongo (db => {
 				var t2 = Date.now ();
 				for (var k in result) { // for each currency "k"...
 					var dataset = result[k];
-					if (!(didBuy[k] || false)) {
+					if ((didBuy[k] || 0) <= 0) {
 
 						// I don't yet own this currency. should I buy?
 						let reason: string = null;
 						buyStrategy.forEach ((strategy, i) => {
 							if (reason !== null) return;
-							reason = strategy.objectionToBuy (k, dataset);
+							reason = strategy.objectionToBuy (k, dataset, values);
 							if (reason !== null) reason = i + '|' + k + (k.length < 4 ? ' ' : '') + ' is not a buy: ' + reason;
 						});
 						if (reason === null) {
 							log ('+|' + k + (k.length < 4 ? ' ' : '') + ' is a buy!!!!!!!!!! (' + values[k].last + '€)', 'red');
-							didBuy[k] = true;
+							didBuy[k] = values[k].last;
 							bus.emit ('buy', k);
 						} else {
 							log (reason);
@@ -171,12 +182,12 @@ mongo (db => {
 						let reason: string = null;
 						sellStrategy.forEach ((strategy, i) => {
 							if (reason !== null) return;
-							reason = strategy.objectionToSell (k, dataset);
+							reason = strategy.objectionToSell (k, dataset, values);
 							if (reason !== null) reason = '*|' + k + (k.length < 4 ? ' ' : '') + ' hodl (' + values[k].last + '€): ' + reason;
 						});
 						if (reason === null) {
 							log ('-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + values[k].last + '€)', 'red');
-							didBuy[k] = false;
+							didBuy[k] = 0;
 							bus.emit ('sell', k);
 						} else {
 							log (reason);

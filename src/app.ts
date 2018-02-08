@@ -72,7 +72,8 @@ io.on ('connection', socket => {
 
 process.on ('uncaughtException', err => {
 	console.log ('### UNCAUGHT EXCEPTION ###');
-	console.log (err);
+	log ('### UNCAUGHT EXCEPTION ###');
+	log (err.stack);
 });
 
 

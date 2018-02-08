@@ -1,3 +1,5 @@
+import logger from '../helper/logger';
+const log = logger (module);
 
 class Data {
 
@@ -11,6 +13,7 @@ class Data {
 	constructor (item: {avg?:number,first?:number,last?:number,min?:number,max?:number,volume?:Array<number>}|number) {
 		this.volume = 0;
 		if (typeof (item) === 'number') {
+			if (isNaN (item)) log (Error ('Data cannot be initialized to "NaN"').stack);
 			this.avg   = item;
 			this.open  = item;
 			this.close = item;
@@ -146,7 +149,6 @@ class Dataset {
 		if (this.data === null || this.data.length === null) {
 			return null;
 		}
-
 		var count: number = this.data.length;
 		var result: Dataset = new Dataset ();
 		var j = 0; 
@@ -155,6 +157,7 @@ class Dataset {
 		} 
 		var open = 0, high = 0, low = 0, close = 0, volume = 0;
 		for (var i = j; i < period + j && i < count; i++) {
+			//log (this.data[i].toString ());
 			open   += this.data[i].open;
 			high   += this.data[i].high;
 			low    += this.data[i].low;

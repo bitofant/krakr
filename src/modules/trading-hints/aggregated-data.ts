@@ -55,10 +55,38 @@ function cleanupAndCallback (data : Array<{ timestamp: number, assets: { [curren
 	if (first < 0) {
 		callback (Error ('no data found'), null);
 	} else {
+
+		// prevent first element from being NULL
 		if (data[0] === null) data[0] = data[first];
+
+		// prevent NaN from occurring in first element
+		for (var k in data[0].assets) {
+			for (var l in data[0].assets[k]) {
+				if (isNaN (data[0].assets[k][l])) {
+					for (var i = 1; i < data.length; i++) {
+						data[0].assets[k][l] = 0;
+						if (!isNaN (data[i].assets[k][l])) {
+							data[0].assets[k][l] = data[i].assets[k][l];
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// check all following elements
 		for (var i = 1; i < data.length; i++) {
+			// if NULL copy the one before
 			if (data[i] === null) {
 				data[i] = data[i - 1];
+			}
+			// if NaN copy value of the one before
+			for (var k in data[i].assets) {
+				for (var l in data[i].assets[k]) {
+					if (isNaN (data[i].assets[k][l])) {
+						data[i].assets[k][l] = data[i - 1].assets[k][l];
+					}
+				}
 			}
 		}
 	}
@@ -78,6 +106,7 @@ function getAggregatedData (secondsPerBracket : number, bracketCount : number, c
 	mongo (db => {
 		var ticker = db.collection ('ticker');
 		var now = kraken.serverTime ();
+
 		var msPerBracket = secondsPerBracket * 1000;
 		var startT = now - (msPerBracket * bracketCount);
 		var brackets : Array<{ timestamp: number, assets: { [currency: string]: number } }> = [];
@@ -88,7 +117,8 @@ function getAggregatedData (secondsPerBracket : number, bracketCount : number, c
 			{
 				$match: {
 					timestamp: {
-						$gt: Long.fromNumber (startT)
+						$gt: Long.fromNumber (startT),
+						$lt: Long.fromNumber (now)
 					}
 				}
 			}, {

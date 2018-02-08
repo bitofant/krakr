@@ -67,10 +67,13 @@
 			.col-3 {
 				left: 245px;
 				width: 100px;
+				height: 1.5em;
+				overflow: hidden;
 			}
 			.col-4 {
 				left: 370px;
 				width: calc(100% - 380px);
+				white-space: pre;
 			}
 		</style>
 	</head>
@@ -168,6 +171,7 @@
 						allRows.push ({
 							row: row,
 							top: row.offsetTop,
+							bottom: row.offsetTop + row.offsetHeight,
 							attached: true
 						});
 						setTimeout (() => {
@@ -186,7 +190,7 @@
 				allRows.forEach ((item, i) => {
 					if (i === 0 || i === allRows.length - 1) return;
 					if (item.top < screen.top && !item.attached) return;
-					var vis = (item.top > screen.top && item.top < screen.bottom);
+					var vis = (item.bottom > screen.top && item.top < screen.bottom);
 					if (vis !== item.attached) {
 						item.attached = vis;
 						if (vis) {

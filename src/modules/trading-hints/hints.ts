@@ -51,13 +51,13 @@ var fn = {
 
 
 var didBuy: { [currency:string]: boolean } = {
-	BCH: true,
-	XETH: true,
-	DASH: true,
-	XREP: true,
-	XXBT: true,
-	XXMR: true,
-	XXRP: true
+	// BCH: true,
+	// XETH: true,
+	// DASH: true,
+	// XREP: true,
+	// XXBT: true,
+	// XXMR: true,
+	// XXRP: true
 };
 
 // setTimeout (() => {
@@ -94,7 +94,7 @@ mongo (db => {
 									if (fn.macd.slow (dataset).hist.getClose () > 0) {
 										var wasBelow20pct = false;
 										for (var i = 0; i < props.checkLastXStochasticBrackets; i++) {
-											if (midStoch.data[i].low < .3) {
+											if (midStoch.data[midStoch.data.length - 1 - i].low < .3) {
 												wasBelow20pct = true;
 												break;
 											}

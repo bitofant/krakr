@@ -104,7 +104,8 @@
 				return nDigits (n, 2);
 			}
 			var content = document.getElementById ('content');
-			var latest = 0;
+			var se = document.getElementById('wrapper'); //document.body.parentElement;
+			var latest = Date.now () - 10 * 60 * 1000;
 			var offsetTop = 5;
 			var numChildren = 0;
 			var rowCount = 1;
@@ -132,7 +133,6 @@
 						if (data.length < 1) return;
 					}
 
-					var se = document.getElementById ('wrapper'); //document.body.parentElement;
 					var shouldStep = (se.scrollHeight - se.scrollTop - window.innerHeight === 0);
 					latest = data[data.length - 1].t;
 					var rows = [];
@@ -199,7 +199,7 @@
 			}
 			setInterval (refresh, 500);
 
-			wrapper.addEventListener ('scroll', ev => {
+			se.addEventListener ('scroll', ev => {
 				var screen = {
 					top: wrapper.scrollTop + 5,
 					bottom: wrapper.scrollTop + window.innerHeight
@@ -226,6 +226,10 @@
 				rowCount = 1;
 				allRows = [];
 				content.innerHTML = '';
+			}, false);
+
+			document.getElementById ('headline').addEventListener ('click', ev => {
+				se.scrollTop = se.scrollHeight;
 			}, false);
 
 		</script>

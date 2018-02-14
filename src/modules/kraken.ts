@@ -209,6 +209,7 @@ function updateTimeDrift (callback) {
 		if (err) throw (err);
 		timeDrift = (result.unixtime * 1000) - Date.now ();
 		if (callback) callback ();
+		bus.emit ('timedrift:updated', timeDrift);
 	}, 10);
 }
 

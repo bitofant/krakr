@@ -12,6 +12,8 @@ import props from '../../application-properties';
 import fs = require ('fs');
 import { CachedMACD, CachedStochastic } from './cached-function';
 
+import getJsAggregatedData from './history';
+
 
 const fn = {
 	macd: {
@@ -157,7 +159,7 @@ mongo (db => {
 	bus.on ('values_of_tradable_assets', (values : {[currency: string]: Asset}) => {
 		setTimeout (() => {
 			var t1 = Date.now ();
-			getAggregatedData (props.hints.buyAndSellPeriodInMinutes * 60, 120, (err, result) => {
+			getJsAggregatedData (props.hints.buyAndSellPeriodInMinutes * 60, 120, (err, result) => {
 				if (err) throw err;
 				var t2 = Date.now ();
 				for (var k in result) { // for each currency "k"...
@@ -198,7 +200,7 @@ mongo (db => {
 
 					}
 				}
-				log ('mongoDB-aggregation took ' + (t2 - t1) + 'ms, financial calculations ' + (Date.now () - t2) + 'ms');
+				log ('aggregation took ' + (t2 - t1) + 'ms, financial calculations ' + (Date.now () - t2) + 'ms');
 				bus.emit ('hints', hints)
 			});
 		}, 500);

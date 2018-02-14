@@ -27,6 +27,8 @@ import ticker from './modules/types/ticker';
 import { sendMail } from './modules/helper/sendmail';
 hints.a = 'c';
 
+import './modules/trading-hints/history';
+
 app.use (express.static (__dirname + '/htdocs'));
 app.use ('/log/', logger_express);
 
@@ -88,7 +90,7 @@ mongo (db => {
 		var values = kraken.getValueOfTradables ();
 		buyValues[currency] = values[currency].last;
 		buyTimes[currency] = kraken.serverTime ();
-		events.insertOne ({
+		if (props.env.prod) events.insertOne ({
 			'type': 'BUY',
 			'c': currency,
 			'buy': buyValues[currency],
@@ -116,7 +118,7 @@ mongo (db => {
 		var pctProfit = profit / boughtValue;
 		var now = kraken.serverTime ();
 		var hodld = now - buyTimes[currency];
-		events.insertOne ({
+		if (props.env.prod) events.insertOne ({
 			'type': 'SELL',
 			'c': currency,
 			'buy': buyValues[currency],

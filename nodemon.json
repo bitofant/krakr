@@ -9,7 +9,8 @@
 		"user-store/*",
 		"src/*",
 		"dist/log.txt",
-		"dist/modules/helper/logger.log"
+		"dist/modules/helper/logger.log",
+		"dist/modules/trading-hints/history-cache.json"
 	],
 	"env": {
 		"NODE_ENV": "development"

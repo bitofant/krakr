@@ -38,6 +38,15 @@ class UserSession {
 		});
 
 
+		socket.on ('currency-settings:get', (assetID: string) => {
+			log ('peng: puff!', 'red');
+			socket.emit ('currency-settings', {
+				id: assetID,
+				peng: 'puff!'
+			});
+		});
+
+
 		var sendTradableAssetValues = () => {
 			socket.emit ('values_of_tradable_assets', kraken.getValueOfTradables ());
 		};

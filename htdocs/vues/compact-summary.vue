@@ -23,6 +23,20 @@
 	.odd-row {
 		background: #f6f6f6;
 	}
+	a.stratlink {
+		display: inline-block;
+		color: #000;
+		padding-left: .4em;
+		padding-right: .4em;
+		border-left: 1px solid rgba(0,0,0,.7);
+		border-right: 1px solid rgba(0,0,0,.7);
+		background: rgba(0,0,0,.1);
+		border-radius: .6em;
+		text-decoration: none;
+	}
+	a.stratlink:hover {
+		text-decoration: none;
+	}
 </style>
 
 <template>
@@ -84,7 +98,7 @@
 			</table>
 		</div>
 		<div v-if="modal" class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog" role="document">
+			<div class="modal-dialog modal-dialog-centered" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
 						<h5 class="modal-title" id="exampleModalLabel" v-text="modal.currency.name + ' ' + modal.hint.substr (0, 1)"></h5>

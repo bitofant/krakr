@@ -33,6 +33,8 @@ import user from '../js/user';
 
 
 
+
+
 export default {
 	name: 'currency-popup',
 	data () {

@@ -159,7 +159,7 @@ mongo (db => {
 	bus.on ('values_of_tradable_assets', (values : {[currency: string]: Asset}) => {
 		setTimeout (() => {
 			var t1 = Date.now ();
-			getJsAggregatedData (props.hints.buyAndSellPeriodInMinutes * 60, 120, (err, result) => {
+			getJsAggregatedData (props.hints.buyAndSellPeriodInMinutes * 60, 200, (err, result) => {
 				if (err) throw err;
 				var t2 = Date.now ();
 				for (var k in result) { // for each currency "k"...

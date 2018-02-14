@@ -117,8 +117,7 @@ import CurrencyPopup from './currency-popup.vue';
 var data = {
 	lastUpdateDelta: 0,
 	user: user,
-	sortedList: [],
-	modal: ''
+	sortedList: []
 };
 
 export default {

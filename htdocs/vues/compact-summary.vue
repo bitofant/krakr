@@ -79,7 +79,7 @@
 						<td v-bind:class="v.even ? 'even-row' : 'odd-row'" class="number" style="color:#080">
 							<a href="#" class="stratlink"
 								:title="v.hint.substr(2)"
-								@click="openModal(v)"
+								@click="showPopup (v.cid)"
 								v-text="v.hint.substr(0,1)"></a>
 						</td>
 						
@@ -97,22 +97,7 @@
 				</tbody>
 			</table>
 		</div>
-		<div v-if="modal" class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-dialog-centered" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel" v-text="modal.currency.name + ' ' + modal.hint.substr (0, 1)"></h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-					<div class="modal-body" v-text="modal.hint.substr (2)"></div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					</div>
-				</div>
-			</div>
-		</div>
+		<currency-popup ref="popup" />
 	</div>
 </template>
 
@@ -121,12 +106,12 @@ import $ from 'jquery';
 import sock from '../sock';
 import assets from '../js/assets';
 import user from '../js/user';
+import CurrencyPopup from './currency-popup.vue';
 
 var data = {
 	lastUpdateDelta: 0,
 	user: user,
-	sortedList: [],
-	modal: null
+	sortedList: []
 };
 
 export default {
@@ -135,6 +120,7 @@ export default {
 		return data;
 	},
 	components: {
+		CurrencyPopup
 	},
 	methods: {
 		sortList () {
@@ -184,11 +170,8 @@ export default {
 			}
 			return s.join ('.');
 		},
-		openModal (item) {
-			data.modal = item;
-			setTimeout (() => {
-				$ ('#exampleModal').modal ()
-			}, 50);
+		showPopup (assetID) {
+			this.$children[0].show (assetID);
 		}
 	},
 	watch: {

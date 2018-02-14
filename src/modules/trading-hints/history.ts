@@ -117,6 +117,8 @@ bus.on ('values_of_tradable_assets', (values: { [currency:string]: ticker }) => 
 		timestamp: kraken.serverTime (),
 		assets: values
 	});
+	// remove first element to prevent the "data[]" array from growing indefinitely
+	data.shift ();
 	fs.appendFile (cacheFile, ',\n' + JSON.stringify (data[data.length - 1]), 'utf8', err => {
 		if (err) log (err.stack, 'red');
 	});

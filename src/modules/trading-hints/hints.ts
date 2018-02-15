@@ -32,7 +32,6 @@ var didBuy: { [currency: string]: number } = {
 	// BCH: 993,
 	// XETH: 644,
 	// DASH: 455,
-	DASH: 535.295
 	// XREP: 41,
 	// XXBT: 6640,
 	// XXMR: 193,
@@ -192,7 +191,8 @@ mongo (db => {
 							if (reason !== null) reason = i + '|' + k + (k.length < 4 ? ' ' : '') + ' is not a buy: ' + reason;
 						});
 						if (reason === null) {
-							reason = '+|' + k + (k.length < 4 ? ' ' : '') + ' is a buy!!!!!!!!!! (' + values[k].last + '€)', 'red';
+							var buyPrice = values[k].bid * 1.00005;
+							reason = '+|' + k + (k.length < 4 ? ' ' : '') + ' is a buy!!!!!!!!!! (' + buyPrice + '€)', 'red';
 							didBuy[k] = values[k].last;
 							bus.emit ('buy', k);
 						}
@@ -212,7 +212,8 @@ mongo (db => {
 							}
 						});
 						if (reason === null) {
-							reason = '-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + values[k].last + '€)', 'red';
+							var sellPrice = values[k].ask / 1.00005;
+							reason = '-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + sellPrice + '€)', 'red';
 							didBuy[k] = 0;
 							bus.emit ('sell', k);
 						}

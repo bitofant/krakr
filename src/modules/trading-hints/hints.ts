@@ -32,6 +32,7 @@ var didBuy: { [currency: string]: number } = {
 	// BCH: 993,
 	// XETH: 644,
 	// DASH: 455,
+	DASH: 535.295
 	// XREP: 41,
 	// XXBT: 6640,
 	// XXMR: 193,
@@ -205,7 +206,10 @@ mongo (db => {
 						sellStrategy.forEach ((strategy, i) => {
 							if (reason !== null) return;
 							reason = strategy.objectionToSell (k, dataset, values);
-							if (reason !== null) reason = '*|' + k + (k.length < 4 ? ' ' : '') + ' hodl (' + values[k].last + '€): ' + reason;
+							if (reason !== null) {
+								var changePct = Math.round ((values[k].last - didBuy[k]) / didBuy[k] * 1000) / 10;
+								reason = '*|' + k + (k.length < 4 ? ' ' : '') + ' hodl (' + (changePct > 0 ? '+' : '') + changePct + '%): ' + reason;
+							}
 						});
 						if (reason === null) {
 							reason = '-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + values[k].last + '€)', 'red';

@@ -168,7 +168,6 @@ singletonInstance = new Kraken ();
 
 var vtLastRefresh = Date.now ();
 function refreshValuesOfTradables () {
-	log ('refreshValuesOfTradables();');
 	try {
 		var tstart = Date.now ();
 		singletonInstance.callAPI ('Ticker', {

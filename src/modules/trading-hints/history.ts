@@ -16,11 +16,13 @@ const T_DAYS = 24 * T_HOURS;
 const keepDataFor = 10 * T_DAYS;
 const cacheFile = __dirname + '/history-cache.json';
 
+
 var timeDriftWasUpdated = false;
 var importing = true;
-bus.on ('timedrift:updated', drift => {
+bus.once ('timedrift:updated', drift => {
 	timeDriftWasUpdated = true;
 });
+
 
 declare interface MongoIntervalData {
 	low: number,
@@ -43,6 +45,7 @@ declare interface MongoTickerEntry {
 		[currency: string]: MongoAssetDetails
 	}
 }
+
 
 var data: Array<MongoTickerEntry> = [];
 
@@ -108,6 +111,7 @@ function importDataFromMongoDB () {
 	});
 }
 
+
 bus.on ('values_of_tradable_assets', (values: { [currency:string]: ticker }) => {
 	var vals = [];
 	for (var k in values) {
@@ -117,12 +121,25 @@ bus.on ('values_of_tradable_assets', (values: { [currency:string]: ticker }) => 
 		timestamp: kraken.serverTime (),
 		assets: values
 	});
-	// remove first element to prevent the "data[]" array from growing indefinitely
+	// possibly remove first elements to prevent the "data[]" array from growing indefinitely
+	if (timeDriftWasUpdated) {
+		var lowerBound = kraken.serverTime () - keepDataFor;
+		var deleteCount = 0;
+		for (var i = 0; i < data.length; i++) {
+			if (data[i].timestamp < lowerBound) deleteCount++;
+			else break;
+		}
+		if (deleteCount > 20) {
+			data.splice (0, deleteCount);
+			log ('removed ' + deleteCount + ' entries from the history');
+		}
+	}
 	data.shift ();
 	fs.appendFile (cacheFile, ',\n' + JSON.stringify (data[data.length - 1]), 'utf8', err => {
 		if (err) log (err.stack, 'red');
 	});
 });
+
 
 function getData (since: number): Array<MongoTickerEntry> {
 	for (var i = 0; i < data.length; i++) {
@@ -132,6 +149,7 @@ function getData (since: number): Array<MongoTickerEntry> {
 	}
 	return [];
 }
+
 
 function callbackWhenLoaded (callback: (err: Error) => void) {
 	if (importing) {
@@ -146,6 +164,7 @@ function callbackWhenLoaded (callback: (err: Error) => void) {
 		}, 5000);
 	} else callback (null); // data found immediately
 }
+
 
 function getAggregatedData (secondsPerBracket : number, bracketCount : number, callback : (err: Error, result: { [currency:string]: Dataset}) => void) {
 	callbackWhenLoaded (err => {

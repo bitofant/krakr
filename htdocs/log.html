@@ -75,6 +75,17 @@
 				width: calc(100% - 380px);
 				white-space: pre;
 			}
+
+			.color-black   { color: #555; }
+			.color-red     { color: #d34; }
+			.color-green   { color: #1c5; }
+			.color-yellow  { color: #dd3; }
+			.color-blue    { color: #39f; }
+			.color-magenta { color: #d39; }
+			.color-cyan    { color: #3dd; }
+			.color-white   { color: #fff; }
+			.color-dim     { opacity: .6 }
+			.color-reset   { color: #fff; opacity: 1; }
 		</style>
 	</head>
 	<body>
@@ -144,9 +155,8 @@
 						var lineCount = item.m.split ('\n').length;
 						rows.push (elem ({
 							appendTo: content,
-							className: 'fadingrow ' + (((numChildren++)&1)===1?'odd-row':'even-row'),
+							className: 'fadingrow ' + (((numChildren++)&1)===1?'odd-row':'even-row') + ' color-' + item.c,
 							style: {
-								color: item.c,
 								opacity: data.length > 50 ? 1 : 0,
 								zIndex: numChildren + 2,
 								height: 'calc(1.5em * ' + lineCount + ')',

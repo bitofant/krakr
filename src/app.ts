@@ -27,7 +27,8 @@ import ticker from './modules/types/ticker';
 import { sendMail } from './modules/helper/sendmail';
 hints.a = 'c';
 
-import './modules/trading-hints/history';
+// import './modules/cryptowat.ch/importer';
+
 
 app.use (express.static (__dirname + '/htdocs'));
 app.use ('/log/', logger_express);

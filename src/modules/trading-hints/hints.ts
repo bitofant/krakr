@@ -13,7 +13,7 @@ import fs = require ('fs');
 import { CachedMACD, CachedStochastic } from './cached-function';
 
 import getJsAggregatedData from './history';
-
+import lth from './long-term-history';
 
 const fn = {
 	macd: {
@@ -47,6 +47,23 @@ const hints: {[currency:string]:string} = {
 const buyStrategy : Array<{
 	objectionToBuy: (currency: string, dataset: Dataset, values: { [currency: string]: Asset }) => string
 }> = [
+	{
+		// daily fast MACD trigger crossed signal
+		objectionToBuy (currency, dataset, values) {
+			var value = lth.macd.fast (currency).hist.getClose ();
+			if (value >= 0) return null;
+			return 'daily fast MACD is on a decline (' + value.toString ().substr (0, props.hints.numberOfMacdDigitsToPrint + 1) + ')';
+		}
+	},
+	{
+		// daily fast MACD trigger crossed signal
+		objectionToBuy (currency, dataset, values) {
+			var value = lth.stochastic.fast (currency).d.getClose ();
+			if (value < .7) return null;
+			var pct = Math.round (value * 100);
+			return 'daily fast stochastic suggests it\'s strongly overbought (' + pct + '%)';
+		}
+	},
 	{
 		// mid stochastic < 50%
 		objectionToBuy (currency, dataset, values) {

@@ -213,7 +213,8 @@ mongo (db => {
 						});
 						if (reason === null) {
 							var sellPrice = values[k].ask / 1.00005;
-							reason = '-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + sellPrice + '€)', 'red';
+							var changePct = Math.round ((sellPrice - didBuy[k]) / didBuy[k] * 1000) / 10;
+							reason = '-|' + k + (k.length < 4 ? ' ' : '') + ' sell as fast as possible!!! (' + sellPrice + '€ | ' + (changePct < 0 ? '' : '+') + changePct + ')', 'red';
 							didBuy[k] = 0;
 							bus.emit ('sell', k);
 						}

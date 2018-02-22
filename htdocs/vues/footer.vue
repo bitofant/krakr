@@ -28,12 +28,13 @@
 	</div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue';
 import sock from '../sock';
-var data = {
+var data : {style:string,msg:string} = {
 	style: '',
 	msg: 'Initializing'
-}
+};
 var oldState = null;
 function updateState () {
 	if (sock.connected !== oldState) {
@@ -49,7 +50,7 @@ function updateState () {
 sock.on ('connect', updateState);
 sock.on ('disconnect', updateState);
 setInterval (updateState, 5000);
-export default {
+export default Vue.extend ({
 	name: 'footr',
 	data () {
 		return data;
@@ -59,5 +60,5 @@ export default {
 			sock.close ();
 		}
 	}
-}
+});
 </script>

@@ -6,7 +6,7 @@ var DIST_FOLDER = __dirname + '/dist/';
 
 
 const frontend = {
-	entry: './htdocs/index.js',
+	entry: './htdocs/index.ts',
 	output: {
 		path: DIST_FOLDER + '/htdocs',
 		publicPath: '/dist/',
@@ -79,6 +79,15 @@ const frontend = {
         options: {
           name: '[name].[ext]?[hash]'
         }
+      },
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+        exclude: '/node_modules|vue/',
+        options: {
+          appendTsSuffixTo: [ /\.vue$/ ],
+          configFile: 'tsconfig.frontend.json'
+        }
       }
     ]
   },
@@ -86,7 +95,7 @@ const frontend = {
     alias: {
       'vue$': 'vue/dist/vue.esm.js'
     },
-    extensions: ['*', '.js', '.vue', '.json']
+    extensions: ['*', '.ts', '.js', '.vue', '.json']
   },
   devServer: {
     historyApiFallback: true,

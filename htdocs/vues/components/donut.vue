@@ -11,7 +11,7 @@
 
 <template>
 	<div style="position:relative">
-		<svg @mouseout="deactivate()">
+		<svg>
 			<g v-bind:transform="'translate(' + center.x + ',' + center.y + ')'">
 				<path v-for="p in paths"
 					class="slice"
@@ -25,13 +25,15 @@
 				<text style="text-anchor:middle" dy="1em">{{ line3 }}</text> -->
 			</g>
 		</svg>
-		<div class="centerpiece" :style="divStyles" v-if="selected !== null" v-html="getDetailsHTML(selected)">
+		<div ref="centerpiece" class="centerpiece" :style="divStyles" v-if="selected !== null" @mousemove="centermm" @click="centerclick">
+			<slot :currency="selected" />
+			<div v-text="radList.join (', ')"></div>
 		</div>
 	</div>
 </template>
 
-<script>
-import Vue from 'Vue';
+<script lang="ts">
+import Vue from 'vue';
 
 // const colors = (function () {
 // 	var colors = ['#555555'];
@@ -69,7 +71,8 @@ export default Vue.extend ({
 			],
 			divStyles: '',
 			hilight: -1,
-			selected: null
+			selected: null,
+			radList: []
 		};
 	},
 	components: {
@@ -77,18 +80,19 @@ export default Vue.extend ({
 	methods: {
 		init () {
 			var svg = this.$el.children[0];
-			var failed = 0, w = true, h = true;
-			if (typeof (this.width ) === 'number' && this.width < 0) w = false;
-			if (typeof (this.height) === 'number' && this.height < 0) h = false;
-			if (!w && !h) return;
-			if ((!w || !h) && this.aspectRatio < 0) return;
-			console.log ('init(); ', Date.now ());
-			if (w) svg.style.width  = typeof (this.width)  === 'number' ? this.width  + 'px' : this.width;
-			if (h) svg.style.height = typeof (this.height) === 'number' ? this.height + 'px' : this.height;
-			if (!w) svg.style.width = (svg.clientHeight * this.aspectRatio | 0) + 'px';
-			if (!h) svg.style.height= (svg.clientWidth  / this.aspectRatio | 0) + 'px';
+			var failed = 0, hasW = true, hasH = true;
+			if (typeof (this.width ) === 'number' && this.width < 0) hasW = false;
+			if (typeof (this.height) === 'number' && this.height < 0) hasH = false;
+			if (!hasW && !hasH) return;
+			if ((!hasW || !hasH) && this.aspectRatio <= 0) return;
+			// console.log ('init(); ', Date.now ());
+			if (hasW) svg.style.width  = typeof (this.width)  === 'number' ? this.width  + 'px' : this.width;
+			if (hasH) svg.style.height = typeof (this.height) === 'number' ? this.height + 'px' : this.height;
+			if (!hasW) svg.style.width = (svg.clientHeight * this.aspectRatio | 0) + 'px';
+			if (!hasH) svg.style.height= (svg.clientWidth  / this.aspectRatio | 0) + 'px';
+			// this.$el.style.height = svg.style.height;
 			
-			var w = svg.clientWidth, h = svg.clientHeight;
+			var w : number = svg.clientWidth, h : number = svg.clientHeight;
 			var isWide = (w > h);
 			svg.setAttribute ('width', w);
 			svg.setAttribute ('height', h);
@@ -101,18 +105,20 @@ export default Vue.extend ({
 
 			var divPos = addPoints (
 				this.center,
-				toPoint (this.radius.inner, Math.PI * -.75)
+				//toPoint (this.radius.inner, Math.PI * -.75)
+				{ x: -this.radius.inner, y: -this.radius.inner }
 			);
-			divPos.x = (divPos.x | 0) - 2;
-			divPos.y = (divPos.y | 0) - 2;
-			var divSize = (this.center.y - divPos.y) << 1;
+			divPos.x = (divPos.x | 0) + 1;
+			divPos.y = (divPos.y | 0) + 1;
+			var divSize = ((this.center.y - divPos.y) << 1) + 1;
 			this.divStyles = {
 				left: divPos.x + 'px',
 				top: divPos.y + 'px',
 				width: divSize + 'px',
-				height: divSize + 'px'
+				height: divSize + 'px',
+				borderRadius: (this.radius.inner*.6|0) + 'px'
 			};
-			console.log (this.divStyles);
+			// console.log (divSize);
 
 			this.render ();
 		},
@@ -131,11 +137,14 @@ export default Vue.extend ({
 			this.data.forEach (item => {
 				total += item.value;
 			});
-			var prevRad = -Math.PI;
+			var prevRad = Math.PI;
+			this.radList.splice (0, this.radList.length);
 			var np = [];
 			this.data.forEach ((item, i) => {
 				var pct = item.value / total;
+				// console.log (item.label + ': ' + pct + '%');
 				var rad = pct * -2 * Math.PI;
+				this.radList.push (rad + prevRad);
 				np.push ({
 					label: item.label,
 					path: 'M' + xya (radius.inner, prevRad) +
@@ -153,6 +162,7 @@ export default Vue.extend ({
 			this.paths = np;
 		},
 		activate (p) {
+			if (this.hilight === p.index) return;
 			var curr = p.currency;
 			this.hilight = p.index;
 			this.selected = p;
@@ -171,11 +181,30 @@ export default Vue.extend ({
 		},
 		getDetailsHTML (item) {
 			return '<span style="font-weight:bold;font-size:140%">' + item.label + '</span>';
+		},
+		centermm (ev) {
+			var x = ev.layerX || ev.offsetX, y = ev.layerY || ev.offsetY;
+			var centerpiece = this.$refs.centerpiece;
+			var cx = centerpiece.offsetWidth, cy = centerpiece.offsetHeight;
+			var px = x - (cx >> 1), py = y - (cy >> 1);
+			var distance = (px * px + py * py) / ((cx >> 1) * (cy >> 1));
+			if (distance < .7) return;
+			var a = Math.atan2 (px, py);
+			for (var i = 1; i < this.radList.length; i++) {
+				if (a > this.radList[i]) {
+					this.activate (this.paths[i]);
+					break;
+				}
+			}
+		},
+		centerclick (ev) {
+			this.centermm (ev);
+			ev.preventDefault ();
 		}
 	},
 	mounted () {
-		console.log ('mounting!');
-		console.log (window.t = this);
+		// console.log ('mounting!');
+		// console.log (window.t = this);
 		this.init ();
 		window.addEventListener ('resize', this.init, false);
 	},
@@ -184,17 +213,13 @@ export default Vue.extend ({
 	},
 	watch: {
 		"data": {
-			handler: 'render',
+			handler: function () {
+				this.render ();
+			},
 			deep: true
 		},
-		"width": {
-			handler: 'init',
-			deep: false
-		},
-		"height": {
-			handler: 'init',
-			deep: false
-		}
+		"width": 'init',
+		"height": 'init'
 	}
 });
 

@@ -27,7 +27,7 @@
 	</div>
 </template>
 
-<script>
+<script lang="ts">
 import CommonFooter from './footer.vue';
 import sock from '../sock.js';
 import Callout from './components/callout';

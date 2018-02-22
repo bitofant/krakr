@@ -25,7 +25,7 @@
 	</div>
 </template>
 
-<script>
+<script lang="ts">
 import $ from 'jquery';
 import sock from '../sock';
 import assets from '../js/assets';

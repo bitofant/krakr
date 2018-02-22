@@ -1,12 +1,12 @@
-<script>
+<script lang="ts">
 
-	import Vue from 'Vue';
+	import Vue from 'vue';
 	import Donut from './components/donut.vue';
 	import user from '../js/user';
 
 
 	export default Donut.extend ({
-		name: 'random-donut',
+		name: 'donut-dashboard',
 		data () {
 			return {
 				width: '100%',
@@ -46,10 +46,7 @@
 			}
 		},
 		watch: {
-			"user.lastUpdate": {
-				handler: 'recalc',
-				deep: false
-			}
+			'user.lastUpdate': 'recalc'
 		}
 	});
 

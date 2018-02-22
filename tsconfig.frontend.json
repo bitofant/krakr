@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"module": "es6",
+		"moduleResolution": "node",
+		"outDir": "dist",
+		"types": [
+			"vue",
+			"socket.io"
+		],
+		"typeRoots" : [
+			"node_modules/@types",
+			"node_modules/technicalindicators/declarations"
+		],
+		"sourceMap": true
+	},
+	"exclude": [
+		"node_modules",
+		"src"
+	]
+}

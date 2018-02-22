@@ -36,7 +36,7 @@
 	<div class="bs-callout bs-callout-danger"><slot></slot></div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
 	name: 'callout',

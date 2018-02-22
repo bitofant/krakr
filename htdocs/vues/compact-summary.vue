@@ -101,7 +101,8 @@
 	</div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue';
 import $ from 'jquery';
 import sock from '../sock';
 import assets from '../js/assets';
@@ -109,12 +110,12 @@ import user from '../js/user';
 import CurrencyPopup from './currency-popup.vue';
 
 var data = {
-	lastUpdateDelta: 0,
+	lastUpdateDelta: '0',
 	user: user,
 	sortedList: []
 };
 
-export default {
+export default Vue.extend ({
 	name: 'currency-summary',
 	data () {
 		return data;
@@ -175,12 +176,9 @@ export default {
 		}
 	},
 	watch: {
-		"user.lastUpdate": {
-			handler: 'sortList',
-			deep: false
-		}
+		'user.lastUpdate': 'sortList'
 	}
-}
+});
 
 
 function updateLastUpdateDelta () {

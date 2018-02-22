@@ -23,26 +23,31 @@
 		<div class="container">
 			<login v-if="!user.isLoggedin" />
 			<div v-else>
-				<!-- <random-donut/> -->
 				<compact-summary v-if="mobile" />
 				<currency-summary v-else />
 				<div class="row">
 					<button type="button" class="btn btn-primary" v-on:click="emit('balance:refresh')">Refresh Balance</button>
 				</div>
-				<currency-donut></currency-donut>
+				<donut-dashboard>
+					<template slot-scope="props">
+						<donut-details :currency="props.currency.currency.cid" />
+					</template>
+				</donut-dashboard>
+				<!-- <currency-donut></currency-donut> -->
 			</div>
 			<common-footer />
 		</div>
 	</div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue';
 import CommonFooter from './footer.vue';
 import Login from './login.vue';
 import CurrencySummary from './currency-summary.vue';
 import CompactSummary from './compact-summary.vue';
-import CurrencyDonut from './currency-donut.vue';
-// import RandomDonut from './random-donut.vue';
+import DonutDashboard from './donut-dashboard.vue';
+import DonutDetails from './donut-details.vue';
 import sock from '../sock';
 import user from '../js/user';
 
@@ -52,7 +57,7 @@ var data = {
 	mobile: (navigator.userAgent.indexOf ('Mobile') > -1)
 };
 
-export default {
+export default Vue.extend ({
 	name: 'app',
 	data () {
 		return data;
@@ -62,15 +67,15 @@ export default {
 		Login,
 		CurrencySummary,
 		CompactSummary,
-		CurrencyDonut,
-		// RandomDonut
+		DonutDashboard,
+		DonutDetails
 	},
 	methods: {
 		emit: ev => {
 			sock.emit (ev);
 		}
 	}
-}
+});
 
 
 sock.on ('debug', data => {

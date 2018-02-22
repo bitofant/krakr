@@ -6,13 +6,17 @@
 	h2 {
 		font-family: 'Lato', 'Helvetica', 'Segoe UI', Arial, sans-serif;
 		font-weight: 900;
-		padding-top: 1.5em;
+		padding-top: 2.3em;
+		white-space: nowrap;
+	}
+	.mobile-h2 {
+		padding-top: 1.3em;
 	}
 </style>
 
 <template>
-	<div class="wrapper">
-		<h2>{{ coolCurrencyName () }}</h2>
+	<div class="wrapper" :style="mobile ? { fontSize: '85%' } : {}">
+		<h2 :class="{ 'mobile-h2': mobile }">{{ coolCurrencyName () }}</h2>
 		Owned:       {{ Math.round (user.assets[currency].owned       * 100) / 100 }}{{ assets[currency].symbol }}<br />
 		Avg. Buy:    {{ Math.round (user.assets[currency].avgBuyPrice * 100) / 100 }}€<br />
 		Money Spent: {{ Math.round (user.assets[currency].moneySpent  * 100) / 100 }}€<br />
@@ -24,6 +28,7 @@
 import Vue from 'vue';
 import assets from '../js/assets';
 import user from '../js/user';
+import isMobile from '../js/is-mobile.js';
 
 
 export default Vue.extend ({
@@ -34,10 +39,9 @@ export default Vue.extend ({
 	data () {
 		return {
 			assets: assets,
-			user: user
+			user: user,
+			mobile: isMobile
 		};
-	},
-	mounted () {
 	},
 	components: {
 	},

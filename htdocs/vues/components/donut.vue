@@ -27,7 +27,6 @@
 		</svg>
 		<div ref="centerpiece" class="centerpiece" :style="divStyles" v-if="selected !== null" @mousemove="centermm" @click="centerclick">
 			<slot :currency="selected" />
-			<div v-text="radList.join (', ')"></div>
 		</div>
 	</div>
 </template>
@@ -219,7 +218,8 @@ export default Vue.extend ({
 			deep: true
 		},
 		"width": 'init',
-		"height": 'init'
+		"height": 'init',
+		'aspecRatio': 'init'
 	}
 });
 

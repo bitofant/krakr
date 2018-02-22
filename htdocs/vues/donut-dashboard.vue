@@ -3,17 +3,22 @@
 	import Vue from 'vue';
 	import Donut from './components/donut.vue';
 	import user from '../js/user';
+	import isMobile from '../js/is-mobile.js';
 
 
 	export default Donut.extend ({
 		name: 'donut-dashboard',
 		data () {
-			return {
+			return Object.assign ({
+				mobile: isMobile,
 				width: '100%',
-				aspectRatio: 2 / 1,
 				user: user,
 				data: []
-			}
+			}, isMobile ? {
+				height: Math.min (window.innerWidth, window.innerHeight)
+			} : {
+				aspectRatio: 2 / 1,
+			});
 		},
 		methods: {
 			recalc () {
@@ -43,7 +48,7 @@
 					'<table>' +
 					'<tr><td>Gain:</td><td>' +
 					'</table>';
-			}
+			},
 		},
 		watch: {
 			'user.lastUpdate': 'recalc'

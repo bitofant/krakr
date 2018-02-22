@@ -42,6 +42,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import isMobile from '../js/is-mobile.js';
 import CommonFooter from './footer.vue';
 import Login from './login.vue';
 import CurrencySummary from './currency-summary.vue';
@@ -54,7 +55,7 @@ import user from '../js/user';
 
 var data = {
 	user: user,
-	mobile: (navigator.userAgent.indexOf ('Mobile') > -1)
+	mobile: isMobile
 };
 
 export default Vue.extend ({

@@ -31,18 +31,23 @@
 <script lang="ts">
 import Vue from 'vue';
 import sock from '../sock';
-var data : {style:string,msg:string} = {
-	style: '',
+import isMobile from '../js/is-mobile.js';
+
+var data = {
+	style: {
+		color: 'inherit',
+		display: 'block'
+	},
 	msg: 'Initializing'
 };
 var oldState = null;
 function updateState () {
 	if (sock.connected !== oldState) {
 		if (oldState = sock.connected) {
-			data.style = '';
+			data.style.color = 'inherit';
 			data.msg = 'Connected';
 		} else {
-			data.style = 'color:#f00';
+			data.style.color = 'color:#f00';
 			data.msg = 'Disconnected'
 		}
 	}
@@ -58,7 +63,19 @@ export default Vue.extend ({
 	methods: {
 		footerClick: () => {
 			sock.close ();
+		},
+		onresize () {
+			data.style.display = window.innerWidth > window.innerHeight ? 'none' : 'block';
 		}
-	}
+	},
+	mounted () {
+		if (isMobile) {
+			window.addEventListener ('resize', this.onresize, false);
+			this.onresize ();
+		}
+	},
+	beforeDestroy () {
+		window.removeEventListener ('resize', this.onresize);
+	},
 });
 </script>

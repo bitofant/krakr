@@ -151,5 +151,11 @@ bus.on ('hints', hints => {
 function logRamUsage () {
 	log (Math.round (process.memoryUsage ().rss / 1024 / 1024) + 'mb memory usage', 'blue');
 }
-setInterval (logRamUsage, 2000);
-setTimeout (logRamUsage, 13000);
+
+(function setTimersForRamLogger () {
+	setInterval (logRamUsage, 60000);
+	for (var i = 1; i < 15; i++) {
+		setTimeout (logRamUsage, i * 2000);
+	}
+	setTimeout (logRamUsage, 13000);
+}) ();

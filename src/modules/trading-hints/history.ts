@@ -84,7 +84,9 @@ fs.exists (cacheFile, exists => {
 
 
 function importDataFromMongoDB () {
+	log ('connecting to MongoDB to import data');
 	mongo (db => {
+		log ('...connected, starting import');
 		var t1 = Date.now ();
 		db.collection ('ticker').find ({
 			timestamp: {
@@ -92,6 +94,7 @@ function importDataFromMongoDB () {
 			}
 		}).toArray ((err, result) => {
 			if (err) throw err;
+			log ('fetched ' + result.length + ' items from MongoDB...');
 			var na: Array<MongoTickerEntry> = [];
 			result.forEach (item => {
 				na.push ({
